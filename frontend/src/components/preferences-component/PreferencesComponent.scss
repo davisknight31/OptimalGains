@@ -1,0 +1,44 @@
+.preferences-table {
+  border-collapse: separate;
+  border-spacing: 10px;
+}
+
+.preferences-label-td {
+  text-align: right;
+}
+
+.preferences-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.preferences-dropdown-td {
+  text-align: left;
+  width: 300px;
+}
+
+// .preferences-dropdown {
+//   color: white;
+//   font-size: 14px;
+//   padding: 12px 12px;
+//   border: 1px solid rgb(63, 63, 63);
+//   border-radius: 5px;
+//   background-color: inherit;
+//   //   border-color: #fff transparent transparent transparent;
+
+//   option {
+//     color: black;
+//     // font-size: 18px;
+//     // background-color: #202020;
+//     // color: white;
+//   }
+
+//   option:hover {
+//     cursor: pointer;
+//   }
+// }
+
+// .preferences-dropdown:focus {
+//   outline: none;
+// }
