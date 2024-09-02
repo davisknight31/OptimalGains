@@ -39,9 +39,24 @@ const PreferencesComponent: React.FC<PreferencesProps> = ({
       equipmentAvailability
     );
     try {
-      const routineData = await apiService.generateRoutine();
-      setGeneratedRoutine(routineData);
-      setRoutineForHome(routineData);
+      if (
+        experienceLevel &&
+        splitType &&
+        daysInTheGym &&
+        overallGoal &&
+        equipmentAvailability
+      ) {
+        const routineData = await apiService.generateRoutine(
+          experienceLevel,
+          splitType,
+          daysInTheGym,
+          overallGoal,
+          equipmentAvailability
+        );
+
+        setGeneratedRoutine(routineData);
+        setRoutineForHome(routineData);
+      }
     } catch (error) {
       console.log("error creating a routine");
     }

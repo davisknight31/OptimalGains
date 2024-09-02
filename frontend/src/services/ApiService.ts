@@ -11,9 +11,24 @@ export class ApiService {
     },
   });
 
-  generateRoutine = async (): Promise<ExerciseRoutine> => {
+  generateRoutine = async (
+    experienceLevel: string,
+    splitType: string,
+    daysInTheGym: string,
+    overallGoal: string,
+    equipmentAvailability: string
+  ): Promise<ExerciseRoutine> => {
     const response = await this.api.get<ExerciseRoutine>(
-      "/optimal-gains/generate-routine"
+      "/optimal-gains/generate-routine",
+      {
+        params: {
+          experienceLevel: experienceLevel,
+          splitType: splitType,
+          daysInTheGym: daysInTheGym,
+          overallGoal: overallGoal,
+          equipmentAvailability: equipmentAvailability,
+        },
+      }
     );
     return response.data;
   };

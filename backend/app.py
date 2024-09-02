@@ -1,7 +1,7 @@
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from random_plan import generateRoutine
+from backend.generate_routine import generate_routine
 
 app = Flask(__name__)
 CORS(app)
@@ -12,8 +12,13 @@ def getHome():
 
 @app.route('/optimal-gains/generate-routine', methods=['GET'])
 def getRoutine():
+    experience_level = request.args.get('experienceLevel', default = 'Test')
+    split_type = request.args.get('splitType', default = 'Test')
+    days_in_the_gym = request.args.get('daysInTheGym', default = 'Test')
+    overall_goal= request.args.get('overallGoal', default = 'Test')
+    equipment_availability = request.args.get('equipmentAvailability', default = 'Test')
     #returns routine as dict
-    routine_dictionary = generateRoutine('ppl')
+    routine_dictionary = generate_routine(experience_level, split_type, days_in_the_gym, overall_goal, equipment_availability)
     return jsonify(routine_dictionary)
 
 

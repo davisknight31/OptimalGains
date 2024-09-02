@@ -108,23 +108,23 @@ export const overallGoalOptions: BasicOptionType[] = [
   { value: "generalHealth", label: "General Health" },
   { value: "hypertrophy", label: "Hypertrophy" },
   { value: "strength", label: "Strength" },
-  { value: "powerbuilding", label: "Powerbuilding (Strength + Hypertrophy)" },
+  //   { value: "powerbuilding", label: "Powerbuilding (Strength + Hypertrophy)" },
 ];
 
 export const equipmentAvailabilityOptions: BasicOptionType[] = [
   { value: "noWeights", label: "No Weights" },
-  { value: "lightDumbbells", label: "Light Dumbbells" },
+  //   { value: "lightDumbbells", label: "Light Dumbbells" },
   { value: "dumbbells", label: "Dumbbells" },
   {
     value: "dumbbellsBarbellRack",
     label: "Dumbbells and Barbell + Rack",
   },
   {
-    value: "gymWithBasicMachines",
-    label: "Gym with Basic Machines",
+    value: "gym",
+    label: "I go to a gym",
   },
-  {
-    value: "gymWithEverything",
-    label: "Gym with Everything",
-  },
+  //   {
+  //     value: "gymWithEverything",
+  //     label: "Gym with Everything",
+  //   },
 ];
