@@ -46,11 +46,9 @@ def find_row_exercise(allowed_exercises_dataframe, selected_exercises):
         random_exercise = select_random_exercise(allowed_exercises_dataframe, selected_exercises, "Back" )
         #if the random exercise is an incline exericse
         if ('Row' in random_exercise.name):
-            print('yes row')
             return random_exercise
         else:
             #didn't find one this time, so continue looping
-            print('no row')
             continue
 
 def find_pulldown_or_pullup_exercise(allowed_exercises_dataframe, selected_exercises):
@@ -59,11 +57,9 @@ def find_pulldown_or_pullup_exercise(allowed_exercises_dataframe, selected_exerc
         random_exercise = select_random_exercise(allowed_exercises_dataframe, selected_exercises, "Back" )
         #if the random exercise is an incline exericse
         if ('Pull-up' in random_exercise.name or 'Pulldown' in random_exercise.name):
-            print('yes pull')
             return random_exercise
         else:
             #didn't find one this time, so continue looping
-            print('no pull')
             continue
 
 
@@ -116,6 +112,5 @@ def select_back_exercises(back_dataframe, equipment_availability, possible_equip
     return selected_exercises
 
 
-    #Compounds need to include at least 1 pullup/pulldown, and 1 row
 
 

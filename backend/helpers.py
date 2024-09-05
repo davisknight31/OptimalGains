@@ -4,6 +4,11 @@ import random
 
 
 def determine_number_of_exercises(sets):
+    #Would break down into 3 sets each workout, or 3
+    if (sets <= 6):
+        return 1 
+    if (sets <= 12):
+        return 2
     #Would break down into 9 sets each workout, or 3-3-3
     if (sets <= 18):
         return 3
@@ -85,3 +90,23 @@ def check_for_bodyweight_and_return_exercise(exercise_dataframe, selected_exerci
         #otherwise, just retrun the exercise
         else:
             return random_exercise
+        
+
+def determine_remaining_exercises(allowed_exercises_dataframe, selected_exercises, number_of_exercises, category):
+    for i in range(number_of_exercises):
+        if (not allowed_exercises_dataframe.empty):
+            random_exercise = select_random_exercise(allowed_exercises_dataframe, selected_exercises, category)
+            selected_exercises.append(random_exercise)
+            allowed_exercises_dataframe = drop_exercise_from_dataframe(allowed_exercises_dataframe, random_exercise)
+    return selected_exercises
+
+
+def drop_bodyweight_exercises(allowed_exercises_dataframe, category):
+    #this function only exists here so that they can be removed from the dataframe if not in noWeights
+    bodyweight_exercise_entries = allowed_exercises_dataframe.loc[(allowed_exercises_dataframe['Equipment'] == 'Body Weight')]
+    
+    for index, row in bodyweight_exercise_entries.iterrows():
+        bodyweight_exercise = create_exercise(row, category)
+        allowed_exercises_dataframe = drop_exercise_from_dataframe(allowed_exercises_dataframe, bodyweight_exercise)
+
+    return allowed_exercises_dataframe
