@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Exercises {
+  exerciseId       Int     @id @default(autoincrement())
+  exerciseName     String
+  targetMuscleGroup     String
+  setup            String
+  execution        String
+  workoutExercises WorkoutExercises[]
+
+}
+
+model Users {
+  userId       Int     @id @default(autoincrement())
+  username     String  @unique
+  firstName    String?
+  lastName     String?
+  email        String @unique
+  password     String
+  createdAt    DateTime @default(now())
+  routines     Routines[]
+  periods      Periods[]
+}
+
+model Routines {
+  routineId       Int     @id @default(autoincrement())
+  userId          Int
+  routineName     String
+  lengthInDays    Int
+  user            Users    @relation(fields: [userId], references: [userId])
+  periods         Periods[]
+  workouts        Workouts[]
+}
+
+model Periods {
+  periodId       Int     @id @default(autoincrement())
+  userId         Int
+  routineId      Int
+  periodName     String
+  dateStarted    DateTime @default(now())
+  lengthInWeeks  Int
+  active         Boolean @default(true)
+  completed      Boolean @default(false)
+  nextWorkoutId  Int
+  user           Users    @relation(fields: [userId], references: [userId])
+  routine        Routines    @relation(fields: [routineId], references: [routineId])
+  nextWorkout    Workouts    @relation(fields: [nextWorkoutId], references: [workoutId])
+  periodWorkouts PeriodWorkouts[]
+}
+
+model Workouts {
+  workoutId      Int     @id @default(autoincrement())
+  routineId      Int
+  workoutName    String
+  positionInRoutine     Int
+  routine       Routines    @relation(fields: [routineId], references: [routineId])
+  periods        Periods[]
+  workoutExercises WorkoutExercises[]
+  periodWorkouts PeriodWorkouts[]
+}
+
+model WorkoutExercises {
+  workoutExerciseId     Int     @id @default(autoincrement())
+  workoutId             Int
+  exerciseId            Int
+  sets                  Int
+  workout              Workouts    @relation(fields: [workoutId], references: [workoutId])
+  exercise             Exercises    @relation(fields: [exerciseId], references: [exerciseId])
+}
+
+model PeriodWorkouts {
+  periodWorkoutId     Int     @id @default(autoincrement())
+  periodId            Int
+  workoutId           Int
+  periodWorkoutName   String
+  date                DateTime @default(now())
+  completed           Boolean  @default(false)
+  period              Periods    @relation(fields: [periodId], references: [periodId])
+  workout             Workouts    @relation(fields: [workoutId], references: [workoutId])
+  periodExercises     PeriodExercises[]
+}
+
+model PeriodExercises {
+  periodExerciseId     Int     @id @default(autoincrement())
+  periodWorkoutId      Int
+  setNumber            Int
+  targetReps           Decimal
+  actualReps           Decimal
+  weight               Decimal
+  periodWorkout       PeriodWorkouts    @relation(fields: [periodWorkoutId], references: [periodWorkoutId])
+}

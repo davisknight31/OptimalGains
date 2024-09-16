@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import "./Button.css";
 
 interface ButtonProps {
   label: string;
@@ -14,7 +13,7 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <>
       <button
-        className="button"
+        className="bg-orange-500 text-white p-3 rounded-2xl w-full hover:bg-orange-400"
         onClick={() => {
           handleClick();
         }}

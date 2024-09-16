@@ -1,21 +1,34 @@
-import React from "react";
-import Button from "@/app/components/button/Button";
+"use client";
+import React, { useEffect } from "react";
 import PageContainer from "@/app/components/page-container/PageContainer";
 import Card from "@/app/components/card/Card";
 import Welcome from "@/app/components/welcome/Welcome";
 import ActivePeriod from "@/app/components/active-period/ActivePeriod";
-import "./page.css";
+import Routines from "@/app/components/routines/Routines";
+import { Routine } from "@/app/types/routine";
+import Navbar from "@/app/components/navbar/Navbar";
+import { useUser } from "@/app/contexts/UserContext";
+import { redirect } from "next/navigation";
 
 const HomePage: React.FC = () => {
-  const onClick = async () => {
-    "use server";
-    console.log("we logged");
-  };
+  const { isLoggedIn } = useUser();
 
+  const testRoutines: Routine[] = [
+    { routineId: 1, routineName: "RoutineOne", daysPerWeek: 5 },
+    { routineId: 2, routineName: "RoutineTwo", daysPerWeek: 6 },
+    { routineId: 3, routineName: "RoutineThree", daysPerWeek: 4 },
+  ];
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      redirect("/pages/login");
+    }
+  });
   return (
     <main>
+      <Navbar></Navbar>
       <PageContainer>
-        <div className="home-cards">
+        <div className="flex flex-col gap-7">
           <Card>
             <Welcome name="John"></Welcome>
           </Card>
@@ -27,6 +40,9 @@ const HomePage: React.FC = () => {
               nextWorkoutName="Chest and triceps"
             ></ActivePeriod>
             {/* <Button handleClick={onClick} label="Start Next Workout"></Button> */}
+          </Card>
+          <Card>
+            <Routines routines={testRoutines}></Routines>
           </Card>
         </div>
       </PageContainer>
