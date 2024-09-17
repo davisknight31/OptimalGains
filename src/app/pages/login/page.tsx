@@ -1,6 +1,6 @@
 "use client";
 import Button from "@/app/components/button/Button";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { testLog } from "@/app/utils/helpers";
 import Card from "@/app/components/card/Card";
 import PageContainer from "@/app/components/page-container/PageContainer";
@@ -8,7 +8,8 @@ import Input from "@/app/components/input/Input";
 import { useUser } from "@/app/contexts/UserContext";
 import { redirect } from "next/navigation";
 import { navigateHome } from "@/app/utils/navigationActions";
-import { registerUser } from "@/app/services/apiService";
+import { loginUser, registerUser } from "@/app/services/apiService";
+import { User } from "@/app/types/user";
 
 enum LoginPageText {
   NoAccountQuestion = "Don't have an account?",
@@ -19,6 +20,7 @@ enum LoginPageText {
 
 const LoginPage: React.FC = () => {
   const { isLoggedIn, setIsLoggedIn } = useUser();
+  const { user, setUser } = useUser();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -71,6 +73,12 @@ const LoginPage: React.FC = () => {
     );
   };
 
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigateHome();
+    }
+  });
+
   function verifyCreateAccountFieldsAreFilled(): boolean {
     if (
       !username ||
@@ -86,9 +94,36 @@ const LoginPage: React.FC = () => {
     return true;
   }
 
-  function login(): void {
+  function verifyLoginFieldsAreFilled(): boolean {
+    if (!username || !password) {
+      setErrorMessage("All fields must be filled");
+      return false;
+    }
+    return true;
+  }
+
+  function setUserDataAndGoToHome(userData: User) {
     setIsLoggedIn(true);
+    setUser(userData);
     navigateHome();
+  }
+
+  async function login(): Promise<void> {
+    if (verifyLoginFieldsAreFilled()) {
+      const response = await loginUser(username, password)
+        .then(async (response) => {
+          // const [routinesResponse, periodsResponse] = await Promise.all([
+          //   getRoutines(),
+          //   getPeriods(),
+          // ]);
+
+          setUserDataAndGoToHome(response.user);
+        })
+        .catch((error) => {
+          console.error("Error creating account:", error.code);
+          setErrorMessage("An error occured authenticating");
+        });
+    }
   }
 
   function checkPasswordsMatch(): boolean {
@@ -102,28 +137,26 @@ const LoginPage: React.FC = () => {
 
   async function createAccount(): Promise<void> {
     if (verifyCreateAccountFieldsAreFilled() && checkPasswordsMatch()) {
-      // const response = await fetch("/api/auth/register", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     username: username,
-      //     password: password,
-      //     firstName: firstName,
-      //     lastName: lastName,
-      //     email: email,
-      //   }),
-      // });
-      // const data = await response.json();
       const response = await registerUser(
         username,
         password,
         firstName,
         lastName,
         email
-      );
-      console.log(response);
+      )
+        .then((response) => {
+          // setIsLoggedIn(true);
+          // setUser(response.user);
+          setUserDataAndGoToHome(response.user);
+          // navigateHome();
+        })
+        .catch((error) => {
+          console.error("Error creating account:", error);
+          setErrorMessage("An error occured creating this account.");
+          // setErrorMessage(
+          //   "An account is associated with this username or email already"
+          // );
+        });
     } else {
       console.log("Couldn't create account");
     }

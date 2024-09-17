@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 // }
 
 export async function GET() {
+  //retrieve a user
   const users = [
     {
       name: "John",

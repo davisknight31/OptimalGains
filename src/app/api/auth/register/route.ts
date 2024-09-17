@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/app/lib/prisma";
 import bcrypt from "bcrypt";
 import { Prisma } from "@prisma/client";
-import { User } from "@/app/types/user";
+import { loginUser, User } from "@/app/types/user";
 
 export async function POST(request: NextRequest) {
   //create a user
@@ -18,22 +18,26 @@ export async function POST(request: NextRequest) {
         firstName: body.firstName,
         lastName: body.lastName,
         email: body.email,
-        createdAt: body.createdAt,
+        createdAt: body.createdAt || new Date(),
       },
     });
 
-    const safeUser: User = {
+    const safeUser: loginUser = {
+      userId: newUser.userId,
       username: newUser.username,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
       email: newUser.email,
+      createdAt: newUser.createdAt,
     };
 
     return NextResponse.json({
       message: "User created successfully",
-      user: newUser,
+      user: safeUser,
     });
   } catch (error: any) {
+    console.error("Error creating user:", error);
+
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code == "P2002") {
         if (error.meta?.target == "username") {

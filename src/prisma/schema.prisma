@@ -12,6 +12,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+
 }
 
 model Exercises {
@@ -55,10 +56,8 @@ model Periods {
   lengthInWeeks  Int
   active         Boolean @default(true)
   completed      Boolean @default(false)
-  nextWorkoutId  Int
   user           Users    @relation(fields: [userId], references: [userId])
   routine        Routines    @relation(fields: [routineId], references: [routineId])
-  nextWorkout    Workouts    @relation(fields: [nextWorkoutId], references: [workoutId])
   periodWorkouts PeriodWorkouts[]
 }
 
@@ -68,7 +67,6 @@ model Workouts {
   workoutName    String
   positionInRoutine     Int
   routine       Routines    @relation(fields: [routineId], references: [routineId])
-  periods        Periods[]
   workoutExercises WorkoutExercises[]
   periodWorkouts PeriodWorkouts[]
 }

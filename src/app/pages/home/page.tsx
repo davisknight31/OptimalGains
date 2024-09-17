@@ -9,28 +9,24 @@ import { Routine } from "@/app/types/routine";
 import Navbar from "@/app/components/navbar/Navbar";
 import { useUser } from "@/app/contexts/UserContext";
 import { redirect } from "next/navigation";
+import { navigateLogin } from "@/app/utils/navigationActions";
 
 const HomePage: React.FC = () => {
-  const { isLoggedIn } = useUser();
-
-  const testRoutines: Routine[] = [
-    { routineId: 1, routineName: "RoutineOne", daysPerWeek: 5 },
-    { routineId: 2, routineName: "RoutineTwo", daysPerWeek: 6 },
-    { routineId: 3, routineName: "RoutineThree", daysPerWeek: 4 },
-  ];
+  const { isLoggedIn, user } = useUser();
 
   useEffect(() => {
     if (!isLoggedIn) {
-      redirect("/pages/login");
+      navigateLogin();
     }
   });
+
   return (
     <main>
       <Navbar></Navbar>
       <PageContainer>
         <div className="flex flex-col gap-7">
           <Card>
-            <Welcome name="John"></Welcome>
+            <Welcome name={user?.firstName}></Welcome>
           </Card>
           <Card>
             <ActivePeriod
@@ -41,9 +37,9 @@ const HomePage: React.FC = () => {
             ></ActivePeriod>
             {/* <Button handleClick={onClick} label="Start Next Workout"></Button> */}
           </Card>
-          <Card>
+          {/* <Card>
             <Routines routines={testRoutines}></Routines>
-          </Card>
+          </Card> */}
         </div>
       </PageContainer>
     </main>

@@ -1,10 +1,13 @@
 "use client";
 
 import { createContext, useState, useContext, ReactNode } from "react";
+import { User } from "../types/user";
 
 interface UserContextType {
   isLoggedIn: boolean;
   setIsLoggedIn: (loggedIn: boolean) => void;
+  user: User | undefined;
+  setUser: (user: User) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -15,9 +18,10 @@ interface UserProviderProps {
 
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User>();
 
   return (
-    <UserContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
+    <UserContext.Provider value={{ isLoggedIn, setIsLoggedIn, user, setUser }}>
       {children}
     </UserContext.Provider>
   );

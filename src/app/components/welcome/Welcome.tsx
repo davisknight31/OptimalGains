@@ -1,7 +1,7 @@
 import React from "react";
 
 interface WelcomeProps {
-  name: string;
+  name: string | null | undefined;
   //   date: Date;
 }
 

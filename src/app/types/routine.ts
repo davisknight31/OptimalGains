@@ -1,18 +1,18 @@
 export interface Routine {
   routineId: number;
   routineName: string;
-  daysPerWeek: number;
+  lengthInDays: number;
   //moredata
   //moredata
   //   days: Day[];
 }
 
-interface Day {
-  dayName: string;
-  exercises: Exercise[];
-}
+// interface Day {
+//   dayName: string;
+//   exercises: Exercise[];
+// }
 
-interface Exercise {
-  exerciseName: string;
-  muscleGroup: string;
-}
+// interface Exercise {
+//   exerciseName: string;
+//   muscleGroup: string;
+// }

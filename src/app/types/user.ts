@@ -1,6 +1,22 @@
+import { Period } from "./period";
+import { Routine } from "./routine";
+
 export interface User {
+  userId: number;
   username: string;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
   email: string;
+  createdAt: Date;
+  routines: Routine[] | null;
+  periods: Period[] | null;
+}
+
+export interface loginUser {
+  userId: number;
+  username: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  createdAt: Date;
 }
