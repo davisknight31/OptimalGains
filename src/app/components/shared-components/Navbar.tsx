@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
           </Link>
         </div>
         <div className="flex items-center">
-          <Link className="text-gray-400 font-semibold" href="/pages/login">
+          <Link className="text-gray-400 font-semibold" href="/pages/routines">
             Routines
           </Link>
         </div>

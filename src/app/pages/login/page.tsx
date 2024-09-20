@@ -1,10 +1,10 @@
 "use client";
-import Button from "@/app/components/button/Button";
+import Button from "@/app/components/shared-components/Button";
 import React, { useEffect, useState } from "react";
 import { testLog } from "@/app/utils/helpers";
-import Card from "@/app/components/card/Card";
-import PageContainer from "@/app/components/page-container/PageContainer";
-import Input from "@/app/components/input/Input";
+import Card from "@/app/components/shared-components/Card";
+import PageContainer from "@/app/components/shared-components/PageContainer";
+import Input from "@/app/components/shared-components/Input";
 import { useUser } from "@/app/contexts/UserContext";
 import { redirect } from "next/navigation";
 import { navigateHome } from "@/app/utils/navigationActions";

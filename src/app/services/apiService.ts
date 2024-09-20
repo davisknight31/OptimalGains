@@ -68,10 +68,26 @@ export async function loginUser(username: string, password: string) {
   return response;
 }
 
-// export async function getRoutines(userId: number) {
-//   const url = "/api/routines";
-//   const routines = await makeGetRequest(url, { userId });
-// }
+export async function getRoutines(userId: number) {
+  const response = await fetch(`/api/routines?userId=${userId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const responseData = await response.json();
+
+  const routinesData: Routine[] = responseData.routines || [];
+
+  // if (routinesData) {
+  //   return routinesData;
+  // } else {
+  //   return [];
+  // }
+  return routinesData;
+}
+
 export async function getPeriods(userId: number) {
   const response = await fetch(`/api/users?userId=${userId}`, {
     method: "GET",

@@ -4,16 +4,18 @@ import React from "react";
 interface ButtonProps {
   label: string;
   handleClick: () => void;
+  customStyles?: string;
 }
 
-const Button: React.FC<ButtonProps> = ({
+const ButtonComponent: React.FC<ButtonProps> = ({
   label,
   handleClick = () => {},
+  customStyles = "",
 }: ButtonProps) => {
   return (
     <>
       <button
-        className="bg-orange-500 text-white p-3 rounded-2xl w-full hover:bg-orange-400"
+        className={`bg-orange-500 text-white p-3 rounded-2xl w-full hover:bg-orange-400 font-semibold text-lg ${customStyles}`}
         onClick={() => {
           handleClick();
         }}
@@ -24,4 +26,4 @@ const Button: React.FC<ButtonProps> = ({
   );
 };
 
-export default Button;
+export default ButtonComponent;

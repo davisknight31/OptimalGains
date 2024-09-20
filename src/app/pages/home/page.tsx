@@ -1,24 +1,34 @@
 "use client";
-import React, { useEffect } from "react";
-import PageContainer from "@/app/components/page-container/PageContainer";
-import Card from "@/app/components/card/Card";
-import Welcome from "@/app/components/welcome/Welcome";
-import ActivePeriod from "@/app/components/active-period/ActivePeriod";
-import Routines from "@/app/components/routines/Routines";
+import React, { useEffect, useState } from "react";
+import PageContainer from "@/app/components/shared-components/PageContainer";
+import Card from "@/app/components/shared-components/Card";
+import Welcome from "@/app/components/home-components/Welcome";
+import ActivePeriod from "@/app/components/home-components/ActivePeriod";
+import RoutineList from "@/app/components/shared-components/RoutineList";
 import { Routine } from "@/app/types/routine";
-import Navbar from "@/app/components/navbar/Navbar";
+import Navbar from "@/app/components/shared-components/Navbar";
 import { useUser } from "@/app/contexts/UserContext";
-import { redirect } from "next/navigation";
 import { navigateLogin } from "@/app/utils/navigationActions";
+import { getRoutines } from "@/app/services/apiService";
 
 const HomePage: React.FC = () => {
-  const { isLoggedIn, user } = useUser();
+  const { isLoggedIn, user, setUser } = useUser();
+  const [userRoutines, setUserRoutines] = useState<Routine[]>([]);
 
   useEffect(() => {
     if (!isLoggedIn) {
       navigateLogin();
     }
   });
+
+  useEffect(() => {
+    if (user) {
+      getRoutines(user?.userId).then((fetchedRoutines) => {
+        setUserRoutines(fetchedRoutines || []);
+        setUser({ ...user, routines: fetchedRoutines });
+      });
+    }
+  }, []);
 
   return (
     <main>
@@ -35,11 +45,10 @@ const HomePage: React.FC = () => {
               totalWeeks={8}
               nextWorkoutName="Chest and triceps"
             ></ActivePeriod>
-            {/* <Button handleClick={onClick} label="Start Next Workout"></Button> */}
           </Card>
-          {/* <Card>
-            <Routines routines={testRoutines}></Routines>
-          </Card> */}
+          <Card>
+            <RoutineList routines={userRoutines} />
+          </Card>
         </div>
       </PageContainer>
     </main>

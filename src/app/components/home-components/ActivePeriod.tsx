@@ -1,5 +1,5 @@
 import React from "react";
-import Button from "../button/Button";
+import Button from "../shared-components/Button";
 import { testLog } from "@/app/utils/helpers";
 
 interface ActivePeriodProps {
@@ -34,7 +34,7 @@ const ActivePeriod: React.FC<ActivePeriodProps> = ({
             Next Workout:&nbsp;
             <span className="text-black">{nextWorkoutName}</span>
           </div>
-          <div className="text-gray-400 font-semibold text-lg">
+          <div>
             <Button handleClick={testLog} label="Start Next Workout"></Button>
           </div>
         </div>
