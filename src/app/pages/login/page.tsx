@@ -176,12 +176,14 @@ const LoginPage: React.FC = () => {
                   placeholder="Username"
                   type="text"
                   onChange={handleUsernameChange}
+                  styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                 ></Input>
                 <br></br>
                 <Input
                   placeholder="Password"
                   type="password"
                   onChange={handlePasswordChange}
+                  styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                 ></Input>
                 <Button handleClick={login} label="Log In"></Button>
               </>
@@ -196,35 +198,41 @@ const LoginPage: React.FC = () => {
                   placeholder="Username"
                   type="text"
                   onChange={handleUsernameChange}
+                  styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                 ></Input>
                 <br></br>
                 <Input
                   placeholder="Password"
                   type="password"
                   onChange={handlePasswordChange}
+                  styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                 ></Input>
                 <br></br>
                 <Input
                   placeholder="Confirm Password"
                   type="password"
                   onChange={handleConfirmPasswordChange}
+                  styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                 ></Input>
                 <div className="flex gap-5">
                   <Input
                     placeholder="First Name"
                     type="text"
                     onChange={handleFirstNameChange}
+                    styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                   ></Input>
                   <Input
                     placeholder="Last Name"
                     type="text"
                     onChange={handleLastNameChange}
+                    styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                   ></Input>
                 </div>
                 <Input
                   placeholder="Email"
                   type="text"
                   onChange={handleEmailChange}
+                  styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                 ></Input>
                 <Button
                   handleClick={createAccount}

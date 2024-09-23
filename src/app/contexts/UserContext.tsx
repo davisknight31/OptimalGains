@@ -3,14 +3,15 @@
 import { createContext, useState, useContext, ReactNode } from "react";
 import { User } from "../types/user";
 import { Routine } from "../types/routine";
+import { Exercise } from "../types/exercise";
 
 interface UserContextType {
   isLoggedIn: boolean;
   setIsLoggedIn: (loggedIn: boolean) => void;
   user: User | undefined;
   setUser: (user: User) => void;
-  // routineBeingEdited: Routine | undefined;
-  // setRoutineBeingEdited: (routine: Routine) => void;
+  exercises: Exercise[]; //Will be set to all the basic exercises from Exercises table and whatever exercises the specific user has added
+  setExercises: (exercoses: Exercise[]) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -22,7 +23,7 @@ interface UserProviderProps {
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User>();
-  // const [routineBeingEdited, setRoutineBeingEdited] = useState<Routine>();
+  const [exercises, setExercises] = useState<Exercise[]>([]); //Will be set to all the basic exercises from Exercises table and whatever exercises the specific user has added
 
   return (
     <UserContext.Provider
@@ -31,8 +32,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         setIsLoggedIn,
         user,
         setUser,
-        // routineBeingEdited,
-        // setRoutineBeingEdited,
+        exercises,
+        setExercises,
       }}
     >
       {children}

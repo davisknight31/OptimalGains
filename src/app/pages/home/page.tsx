@@ -9,11 +9,14 @@ import { Routine } from "@/app/types/routine";
 import Navbar from "@/app/components/shared-components/Navbar";
 import { useUser } from "@/app/contexts/UserContext";
 import { navigateLogin } from "@/app/utils/navigationActions";
-import { getRoutines } from "@/app/services/apiService";
+import { getAllExercises, getRoutines } from "@/app/services/apiService";
+import { Exercise } from "@/app/types/exercise";
 
 const HomePage: React.FC = () => {
-  const { isLoggedIn, user, setUser } = useUser();
+  const { isLoggedIn, user, setUser, exercises, setExercises } = useUser();
+  const [isFetching, setIsFetching] = useState(true);
   const [userRoutines, setUserRoutines] = useState<Routine[]>([]);
+  // const [exercises, setExercises] = useState<Exercise[]>([]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -22,13 +25,23 @@ const HomePage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && !user.routines) {
       getRoutines(user?.userId).then((fetchedRoutines) => {
-        setUserRoutines(fetchedRoutines || []);
         setUser({ ...user, routines: fetchedRoutines });
+        console.log(fetchedRoutines);
       });
     }
+    getAllExercises().then((fetchedExercises) => {
+      console.log(fetchedExercises);
+      setExercises(fetchedExercises);
+    });
   }, []);
+
+  useEffect(() => {
+    if (user?.routines && exercises) {
+      setIsFetching(false);
+    }
+  }, [user, exercises]);
 
   return (
     <main>
@@ -47,7 +60,7 @@ const HomePage: React.FC = () => {
             ></ActivePeriod>
           </Card>
           <Card>
-            <RoutineList routines={userRoutines} />
+            <RoutineList routines={user?.routines || []} loading={isFetching} />
           </Card>
         </div>
       </PageContainer>

@@ -1,3 +1,4 @@
+import { Exercise } from "../types/exercise";
 import { Routine } from "../types/routine";
 
 // async function makeGetRequest(url: string, params?: Record<string, any>) {
@@ -78,7 +79,27 @@ export async function getRoutines(userId: number) {
 
   const responseData = await response.json();
 
+  // responseData.routines.forEach((routine) => {
+
+  // })
+
   const routinesData: Routine[] = responseData.routines || [];
+
+  if (routinesData.length > 0) {
+    routinesData.forEach((routine) => {
+      getWorkouts(routine.routineId).then(async (response) => {
+        const workoutResponseData = await response.json();
+        routine.workouts = workoutResponseData.workouts;
+        routine.workouts.forEach((workout) => {
+          getWorkoutExercises(workout.workoutId).then(async (response) => {
+            const workoutExerciseResponseData = await response.json();
+            workout.workoutExercises =
+              workoutExerciseResponseData.workoutExercises;
+          });
+        });
+      });
+    });
+  }
 
   // if (routinesData) {
   //   return routinesData;
@@ -86,6 +107,31 @@ export async function getRoutines(userId: number) {
   //   return [];
   // }
   return routinesData;
+}
+
+export async function getWorkouts(routineId: number) {
+  const response = await fetch(`/api/workouts?routineId=${routineId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return response;
+}
+
+export async function getWorkoutExercises(workoutId: number) {
+  const response = await fetch(
+    `/api/workout-exercises?workoutId=${workoutId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  return response;
 }
 
 export async function getPeriods(userId: number) {
@@ -97,4 +143,19 @@ export async function getPeriods(userId: number) {
   });
 
   return response;
+}
+
+export async function getAllExercises() {
+  const response = await fetch(`/api/exercises`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const responseData = await response.json();
+
+  const exercises: Exercise[] = responseData.exercises || [];
+
+  return exercises;
 }
