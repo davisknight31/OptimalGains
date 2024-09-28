@@ -20,7 +20,6 @@ const Input: React.FC<InputProps> = ({
     onChange(event.target.value);
   };
 
-  //Don't think I need value attribute
   return (
     <>
       <input
@@ -29,6 +28,10 @@ const Input: React.FC<InputProps> = ({
         onChange={onInputChange}
         className={styles}
         value={value}
+        min="0"
+        onKeyDown={(e) =>
+          type === "number" && e.key === "-" && e.preventDefault()
+        }
       ></input>
     </>
   );
