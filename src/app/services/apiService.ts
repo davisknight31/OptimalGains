@@ -1,5 +1,6 @@
 import { Exercise } from "../types/exercise";
 import { Routine } from "../types/routine";
+import { Workout } from "../types/workout";
 
 // async function makeGetRequest(url: string, params?: Record<string, any>) {
 //   // Construct the query string from params if provided
@@ -25,6 +26,22 @@ import { Routine } from "../types/routine";
 async function makePostRequest(url: string, data: any) {
   const response = await fetch(url, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`${response.status}`);
+  }
+
+  return await response.json();
+}
+
+async function makePutRequest(url: string, data: any) {
+  const response = await fetch(url, {
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
@@ -91,11 +108,13 @@ export async function getRoutines(userId: number) {
         const workoutResponseData = await response.json();
         routine.workouts = workoutResponseData.workouts;
         routine.workouts.forEach((workout) => {
-          getWorkoutExercises(workout.workoutId).then(async (response) => {
-            const workoutExerciseResponseData = await response.json();
-            workout.workoutExercises =
-              workoutExerciseResponseData.workoutExercises;
-          });
+          if (workout.workoutId) {
+            getWorkoutExercises(workout.workoutId).then(async (response) => {
+              const workoutExerciseResponseData = await response.json();
+              workout.workoutExercises =
+                workoutExerciseResponseData.workoutExercises;
+            });
+          }
         });
       });
     });
@@ -159,3 +178,152 @@ export async function getAllExercises() {
 
   return exercises;
 }
+
+// export async createRoutine() {
+//   //Will need to wait for calls to be done, can't be all async like in updateRoutine
+//   //since IDs will rely on eachother
+// }
+
+export async function updateRoutine(
+  routineId: number,
+  routineName: string,
+  lengthInDays: string,
+  routineWorkouts: Workout[]
+) {
+  const routinesUrl = "/api/routines";
+  const workoutsUrl = "/api/workouts";
+  const workoutExercisesUrl = "/api/workout-exercises";
+
+  const routineData = {
+    routineId: routineId,
+    routineName: routineName,
+    lengthInDays: parseInt(lengthInDays),
+  };
+
+  const routineResponse = await makePutRequest(routinesUrl, routineData);
+
+  const updatedRoutineWorkouts = await Promise.all(
+    routineWorkouts.map(async (workout) => {
+      if (workout.workoutId) {
+        const updateWorkoutData = {
+          workoutId: workout.workoutId,
+          workoutName: workout.workoutName,
+          positionInRoutine: workout.positionInRoutine,
+        };
+        const updateWorkoutResponse = await makePutRequest(
+          workoutsUrl,
+          updateWorkoutData
+        );
+      } else {
+        const createWorkoutData = {
+          routineId: routineId,
+          workoutName: workout.workoutName,
+          positionInRoutine: workout.positionInRoutine,
+        };
+        const createWorkoutResponse = await makePostRequest(
+          workoutsUrl,
+          createWorkoutData
+        );
+        workout.workoutId = createWorkoutResponse.workout.workoutId;
+      }
+      return workout;
+    })
+  );
+  console.log(updatedRoutineWorkouts);
+
+  const updatedWorkoutsWithUpdatedExercises = updatedRoutineWorkouts.map(
+    async (workout) => {
+      const exercisePromises = workout.workoutExercises.map(
+        async (workoutExercise) => {
+          if (workoutExercise.workoutExerciseId) {
+            const updateWorkoutExerciseData = {
+              workoutExerciseId: workoutExercise.workoutExerciseId,
+              exerciseId: workoutExercise.exerciseId,
+              sets: workoutExercise.sets,
+              positionInWorkout: workoutExercise.positionInWorkout,
+            };
+            const updateWorkoutExerciseResponse = await makePutRequest(
+              workoutExercisesUrl,
+              updateWorkoutExerciseData
+            );
+          } else {
+            const createWorkoutExerciseData = {
+              workoutId: workout.workoutId,
+              exerciseId: workoutExercise.exerciseId,
+              sets: workoutExercise.sets,
+              positionInWorkout: workoutExercise.positionInWorkout,
+            };
+            const createWorkoutExerciseResponse = await makePostRequest(
+              workoutExercisesUrl,
+              createWorkoutExerciseData
+            );
+          }
+        }
+      );
+      await Promise.all(exercisePromises);
+    }
+  );
+  await Promise.all(updatedWorkoutsWithUpdatedExercises);
+
+  // routineWorkouts.forEach((workout) => {
+  //   workout.workoutExercises.forEach(async (workoutExercise) => {
+  //     if (workoutExercise.workoutExerciseId) {
+  //       const updateWorkoutExerciseData = {
+  //         workoutExerciseId: workoutExercise.workoutExerciseId,
+  //         exerciseId: workoutExercise.exerciseId,
+  //         sets: workoutExercise.sets,
+  //         positionInWorkout: workoutExercise.positionInWorkout,
+  //       };
+  //       const updateWorkoutExerciseResponse = await makePutRequest(
+  //         workoutExercisesUrl,
+  //         updateWorkoutExerciseData
+  //       );
+  //     } else {
+  //       console.log(workoutExercise);
+  //       const createWorkoutExerciseData = {
+  //         workoutId: workoutExercise.workoutId,
+  //         exerciseId: workoutExercise.exerciseId,
+  //         sets: workoutExercise.sets,
+  //         positionInWorkout: workoutExercise.positionInWorkout,
+  //       };
+  //       const createWorkoutExerciseResponse = await makePostRequest(
+  //         workoutExercisesUrl,
+  //         createWorkoutExerciseData
+  //       );
+  //     }
+  //   });
+  // });
+}
+
+// console.log("Workout Response: " + workoutResponse);
+
+// workout.workoutExercises.forEach((workoutExercise) => {
+//   if (workoutExercise.workoutExerciseId) {
+//     const workoutExerciseData = {
+//       workoutExerciseId: workoutExercise.workoutExerciseId,
+//       exerciseId: workoutExercise.exerciseId,
+//       sets: workoutExercise.sets,
+//       positionInWorkout: workoutExercise.positionInWorkout,
+//     };
+//     const workoutExerciseUpdateResponse = makePutRequest(
+//       workoutExercisesUrl,
+//       workoutExerciseData
+//     );
+//   } else {
+
+//     //create new
+//   }
+
+//ACTUALLY probably make a lsit of workoutData, and edit the workouts where an id exists
+// create where it doesnt, then will have to create based on that new id,
+//or even create based on the old id.
+
+// return response;
+//call edit routine endpoint to edit routine name and length in days,
+
+//call edit workout endpoint to update workout name, position in the routine
+//call create workout endpoint to add a new workout with the new name and position
+
+//call the edit workout exercise endpoint to
+// update the workout exercise's exerciseid, sets, and position
+//call the create workout exercise endpoint to add new workout exercises

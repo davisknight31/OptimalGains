@@ -1,5 +1,5 @@
 export interface NewWorkoutExercise {
-  uniqueId: number;
+  uniqueId?: number;
   workoutId?: number;
   exerciseId: number;
   sets: number;

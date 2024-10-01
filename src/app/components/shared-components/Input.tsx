@@ -30,8 +30,18 @@ const Input: React.FC<InputProps> = ({
         value={value}
         min="0"
         onKeyDown={(e) =>
-          type === "number" && e.key === "-" && e.preventDefault()
+          type === "number" &&
+          (e.key === "-" || e.key === "." || e.key === "e") &&
+          e.preventDefault()
         }
+        onPaste={(e) => {
+          if (type === "number") {
+            const pastedText = e.clipboardData.getData("text");
+            if (/[.-e]/.test(pastedText)) {
+              e.preventDefault();
+            }
+          }
+        }}
       ></input>
     </>
   );

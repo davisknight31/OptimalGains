@@ -56,3 +56,39 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function PUT(request: NextRequest) {
+  //update a workout
+  try {
+    const body = await request.json();
+
+    const updatedWorkout = await prisma.workouts.update({
+      where: {
+        workoutId: body.workoutId,
+      },
+      data: {
+        workoutName: body.workoutName,
+        positionInRoutine: body.positionInRoutine,
+      },
+    });
+
+    return NextResponse.json({
+      message: "Workout updated successfully",
+      workout: updatedWorkout,
+    });
+  } catch (error: any) {
+    console.error("Error updating workout:", error);
+
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      return NextResponse.json(
+        { error: "Database connection failed" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "An unknown error occurred" },
+      { status: 500 }
+    );
+  }
+}

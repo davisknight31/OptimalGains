@@ -1,11 +1,15 @@
 import React from "react";
 
-const Spinner: React.FC = () => {
+const CoverSpinner: React.FC = () => {
   return (
-    <div>
+    <div
+      className="bg-black bg-opacity-20 flex justify-center items-center fixed w-full h-full inset-0 z-50"
+      role="status"
+      aria-live="polite"
+    >
       <svg
         aria-hidden="true"
-        className="w-12 h-12 text-gray-200 animate-spin dark:text-gray-600 fill-orange-500"
+        className="w-24 h-24 text-gray-200 animate-spin dark:text-gray-600 fill-orange-500"
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -23,4 +27,4 @@ const Spinner: React.FC = () => {
   );
 };
 
-export default Spinner;
+export default CoverSpinner;

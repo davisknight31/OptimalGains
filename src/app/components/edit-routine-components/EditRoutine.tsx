@@ -15,6 +15,9 @@ import { NewWorkout } from "@/app/types/newWorkout";
 import trashIcon from "../../assets/trashIcon_Black.png";
 import Image from "next/image";
 import ErrorCard from "../shared-components/ErrorCard";
+import { updateRoutine } from "@/app/services/apiService";
+import CoverSpinner from "../shared-components/CoverSpinner";
+import { navigateRoutines } from "@/app/utils/navigationActions";
 
 interface EditRoutineProps {
   routine?: Routine;
@@ -71,9 +74,9 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
   const [lengthInDays, setLengthInDays] = useState<string>("");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [inputSets, setInputSets] = useState<{ [key: string]: string }>({});
-  const [exerciseOptions, setExerciseOptions] = useState<ExerciseOption[]>([]);
-  const [groupedExerciseOptions, setGroupedExerciseOptions] =
-    useState<GroupedExercisesOption[]>();
+  const [groupedExerciseOptions, setGroupedExerciseOptions] = useState<
+    GroupedExercisesOption[]
+  >([]);
   const [workoutsToDelete, setWorkoutsToDelete] = useState<number[]>([]);
   const [workoutExercisesToDelete, setWorkoutExercisesToDelete] = useState<
     number[]
@@ -81,23 +84,13 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
   const [newWorkoutKeyCounter, setNewWorkoutKeyCounter] = useState<number>(0);
   const [newExerciseKeyCounter, setNewExerciseKeyCounter] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const inputStyles: string =
     "p-1 rounded-lg bg-transparent border-2 border-slate-100 placeholder-slate-400 focus:outline-0";
 
   useEffect(() => {
     setFilteredExercises(exercises);
-    // const mappedOptions: ExerciseOption[] = exercises.map((exercise) => ({
-    //   label: exercise.exerciseName,
-    //   value: exercise,
-    //   groupLabel: exercise.targetMuscleGroup.includes("Delts")
-    //     ? exercise.targetMuscleGroup + "| Shoulders"
-    //     : exercise.targetMuscleGroup,
-    // }));
-    // const groupedMappedOptions: GroupedExerciseOption[] = exercises.map((exercise => ({
-    //   label:
-    // })))
-    // setExerciseOptions(mappedOptions);
     const groupedExercises = createGroupedExercisesList();
     setGroupedExerciseOptions(groupedExercises);
   }, []);
@@ -113,12 +106,18 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
     console.log("workouts updated:", workouts);
   }, [workouts]);
 
+  useEffect(() => {
+    console.log("length: ", lengthInDays);
+  }, [lengthInDays]);
+
   function createGroupedExercisesList(): GroupedExercisesOption[] {
     const groupedOptions: GroupedExercisesOption[] = exercises.reduce(
       (groups: GroupedExercisesOption[], exercise) => {
         const group = groups.find(
           (g) => g.label === exercise.targetMuscleGroup
         );
+
+        //maybe eventually do leg filtering
 
         const exerciseOption: ExerciseOption = {
           label: exercise.exerciseName,
@@ -127,8 +126,6 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
             ? exercise.targetMuscleGroup + " | Shoulders"
             : exercise.targetMuscleGroup,
         };
-
-        //maybe do something with quads, hamstrings, just legs filtering in general
 
         if (group) {
           group.options.push(exerciseOption);
@@ -151,10 +148,11 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
   };
 
   const handleLengthInDaysChange = (value: string) => {
-    console.log(value);
-    parseInt(value) > 7
+    console.log(lengthInDays);
+    const flooredValue = Math.floor(parseInt(value));
+    flooredValue > 8 || flooredValue < 1
       ? setLengthInDays(lengthInDays)
-      : setLengthInDays(value);
+      : setLengthInDays(flooredValue.toString());
   };
 
   const handleWorkoutNameChange = (index: number, newName: string) => {
@@ -203,6 +201,11 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
     workoutIndex: number,
     newSets: string
   ) => {
+    if (parseInt(newSets) > 10 || parseInt(newSets) < 1) {
+      newSets = inputSets[`${workoutIndex}-${exerciseIndex}`];
+      console.log(newSets);
+    }
+
     setInputSets((prevInputs) => ({
       ...prevInputs,
       [`${workoutIndex}-${exerciseIndex}`]: newSets, // Use a unique key per exercise input
@@ -350,6 +353,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
   //need to add an empty workoutExercise to the workout where add exercise was clicked ^^^
 
   function addWorkout(): void {
+    setErrorMessage("");
     if (workouts.length < parseInt(lengthInDays)) {
       setWorkouts([
         ...workouts,
@@ -436,13 +440,30 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
   }
 
   const log = () => {
-    console.log("Pulled Workouts: ", workouts);
-    console.log(
-      "Existing Workout Exercises to Delete: ",
-      workoutExercisesToDelete
-    );
+    //update first
+    // console.log(routineName);
+    if (workouts.length > parseInt(lengthInDays)) {
+      setErrorMessage(
+        "Number of workouts must, at most, match the length of the routine."
+      );
+    } else {
+      setIsSubmitting(true);
+      if (routine) {
+        updateRoutine(routine.routineId, routineName, lengthInDays, workouts);
+        //^ This already waits to finish
 
-    console.log("Existing Workouts to Delete", workoutsToDelete);
+        //show the modal which will contain this button to confirm and move on
+        navigateRoutines();
+      }
+
+      //delete after, to ensure values for the routine exist still, if that even matters
+      console.log(
+        "Existing Workout Exercises to Delete: ",
+        workoutExercisesToDelete
+      );
+
+      console.log("Existing Workouts to Delete", workoutsToDelete);
+    }
   };
 
   if (!routine) {
@@ -488,6 +509,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
   if (routine) {
     return (
       <>
+        {isSubmitting && <CoverSpinner></CoverSpinner>}
         <h1 className="text-3xl font-bold text-orange-500">Editing</h1>
         <table className="border-collapse">
           <tbody>
@@ -658,19 +680,29 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
                           <td className="p-3">
                             <Select
                               options={groupedExerciseOptions}
-                              value={exerciseOptions.find(
-                                (option) =>
-                                  option.value.exerciseId ===
-                                  exercise.exerciseId
-                              )}
-                              styles={customBasicStyles}
-                              onChange={(newExercise: ExerciseOption) =>
-                                handleExerciseChange(
-                                  exerciseIndex,
-                                  workoutIndex,
-                                  newExercise.value
+                              value={groupedExerciseOptions
+                                .find((group) =>
+                                  group.options.find(
+                                    (option) =>
+                                      option.value.exerciseId ===
+                                      exercise.exerciseId
+                                  )
                                 )
-                              }
+                                ?.options.find(
+                                  (option) =>
+                                    option.value.exerciseId ===
+                                    exercise.exerciseId
+                                )}
+                              styles={customBasicStyles}
+                              onChange={(newValue) => {
+                                if (newValue) {
+                                  handleExerciseChange(
+                                    exerciseIndex,
+                                    workoutIndex,
+                                    newValue.value
+                                  );
+                                }
+                              }}
                               filterOption={customFilterOption}
                             ></Select>
                           </td>
