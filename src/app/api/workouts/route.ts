@@ -92,3 +92,34 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const deletedWorkout = await prisma.workouts.delete({
+      where: {
+        workoutId: body.workoutId,
+      },
+    });
+
+    return NextResponse.json({
+      message: "Workout deleted successfully",
+      workout: deletedWorkout,
+    });
+  } catch (error: any) {
+    console.error("Error deleting workout:", error);
+
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      return NextResponse.json(
+        { error: "Database connection failed" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "An unknown error occurred" },
+      { status: 500 }
+    );
+  }
+}

@@ -57,9 +57,9 @@ export const customBasicStyles: StylesConfig<any, false> = {
     borderRadius: "0.5rem",
     borderWidth: "2px",
     boxShadow: state.isFocused ? "" : provided.boxShadow,
-    borderColor: state.isFocused ? "#f1f5f9" : "#f1f5f9",
+    borderColor: state.isFocused ? "#e2e8f0" : "#e2e8f0",
     "&:hover": {
-      borderColor: state.isFocused ? "#f1f5f9" : "#f1f5f9",
+      borderColor: state.isFocused ? "#e2e8f0" : "#e2e8f0",
     },
   }),
   option: (provided, state) => ({

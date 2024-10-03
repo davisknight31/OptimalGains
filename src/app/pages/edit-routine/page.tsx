@@ -4,6 +4,7 @@ import Card from "@/app/components/shared-components/Card";
 import Navbar from "@/app/components/shared-components/Navbar";
 import PageContainer from "@/app/components/shared-components/PageContainer";
 import { useUser } from "@/app/contexts/UserContext";
+import { getRoutines } from "@/app/services/apiService";
 import { Routine } from "@/app/types/routine";
 import { navigateLogin, navigateRoutines } from "@/app/utils/navigationActions";
 import { useRouter } from "next/navigation";
@@ -11,7 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const EditRoutinePage: React.FC = () => {
-  const { isLoggedIn, user } = useUser();
+  const { isLoggedIn, user, setUser } = useUser();
   const [routineIdExists, setRoutineIdExists] = useState(false);
   const [routineToEdit, setRoutineToEdit] = useState<Routine | undefined>();
   const searchParams = useSearchParams();
@@ -50,12 +51,24 @@ const EditRoutinePage: React.FC = () => {
     //if not, redirect back to the routines page since that means the user probably passed the id themselves in the url
   }, [routineId]);
 
+  function refreshRoutines(): void {
+    if (user) {
+      getRoutines(user.userId).then((fetchedRoutines) => {
+        setUser({ ...user, routines: fetchedRoutines });
+        console.log(fetchedRoutines);
+      });
+    }
+  }
+
   return (
     <>
       <Navbar></Navbar>
       <PageContainer>
         <Card>
-          <EditRoutine routine={routineToEdit}></EditRoutine>
+          <EditRoutine
+            routine={routineToEdit}
+            refreshRoutines={refreshRoutines}
+          ></EditRoutine>
         </Card>
       </PageContainer>
     </>

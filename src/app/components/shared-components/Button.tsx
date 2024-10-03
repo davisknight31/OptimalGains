@@ -4,12 +4,14 @@ import React from "react";
 interface ButtonProps {
   label: string;
   handleClick: () => void;
+  isDisabled?: boolean;
   customStyles?: string;
 }
 
 const ButtonComponent: React.FC<ButtonProps> = ({
   label,
   handleClick = () => {},
+  isDisabled,
   customStyles = "",
 }: ButtonProps) => {
   return (
@@ -19,6 +21,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         onClick={() => {
           handleClick();
         }}
+        disabled={isDisabled}
       >
         {label}
       </button>

@@ -55,6 +55,22 @@ async function makePutRequest(url: string, data: any) {
   return await response.json();
 }
 
+async function makeDeleteRequest(url: string, data: any) {
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`${response.status}`);
+  }
+
+  return await response.json();
+}
+
 export async function registerUser(
   username: string,
   password: string,
@@ -179,10 +195,54 @@ export async function getAllExercises() {
   return exercises;
 }
 
-// export async createRoutine() {
-//   //Will need to wait for calls to be done, can't be all async like in updateRoutine
-//   //since IDs will rely on eachother
-// }
+export async function createRoutine(
+  userId: number,
+  routineName: string,
+  lengthInDays: string,
+  routineWorkouts: Workout[]
+) {
+  const routinesUrl = "/api/routines";
+  const workoutsUrl = "/api/workouts";
+  const workoutExercisesUrl = "/api/workout-exercises";
+
+  const routineData = {
+    userId: userId,
+    routineName: routineName,
+    lengthInDays: parseInt(lengthInDays),
+  };
+
+  const routineResponse = await makePostRequest(routinesUrl, routineData);
+  const newRoutineId: number = routineResponse.routine.routineId;
+
+  const newWorkouts = routineWorkouts.map(async (workout) => {
+    const workoutData = {
+      routineId: newRoutineId,
+      workoutName: workout.workoutName,
+      positionInRoutine: workout.positionInRoutine,
+    };
+    const createdWorkoutResponse = await makePostRequest(
+      workoutsUrl,
+      workoutData
+    );
+    const newWorkoutId = createdWorkoutResponse.workout.workoutId;
+    const newWorkoutExercises = workout.workoutExercises.map(
+      async (exercise) => {
+        const workoutExerciseData = {
+          workoutId: newWorkoutId,
+          exerciseId: exercise.exerciseId,
+          sets: exercise.sets,
+          positionInWorkout: exercise.positionInWorkout,
+        };
+        const createWorkoutExerciseResponse = await makePostRequest(
+          workoutExercisesUrl,
+          workoutExerciseData
+        );
+      }
+    );
+    await Promise.all(newWorkoutExercises);
+  });
+  await Promise.all(newWorkouts);
+}
 
 export async function updateRoutine(
   routineId: number,
@@ -264,66 +324,32 @@ export async function updateRoutine(
     }
   );
   await Promise.all(updatedWorkoutsWithUpdatedExercises);
-
-  // routineWorkouts.forEach((workout) => {
-  //   workout.workoutExercises.forEach(async (workoutExercise) => {
-  //     if (workoutExercise.workoutExerciseId) {
-  //       const updateWorkoutExerciseData = {
-  //         workoutExerciseId: workoutExercise.workoutExerciseId,
-  //         exerciseId: workoutExercise.exerciseId,
-  //         sets: workoutExercise.sets,
-  //         positionInWorkout: workoutExercise.positionInWorkout,
-  //       };
-  //       const updateWorkoutExerciseResponse = await makePutRequest(
-  //         workoutExercisesUrl,
-  //         updateWorkoutExerciseData
-  //       );
-  //     } else {
-  //       console.log(workoutExercise);
-  //       const createWorkoutExerciseData = {
-  //         workoutId: workoutExercise.workoutId,
-  //         exerciseId: workoutExercise.exerciseId,
-  //         sets: workoutExercise.sets,
-  //         positionInWorkout: workoutExercise.positionInWorkout,
-  //       };
-  //       const createWorkoutExerciseResponse = await makePostRequest(
-  //         workoutExercisesUrl,
-  //         createWorkoutExerciseData
-  //       );
-  //     }
-  //   });
-  // });
 }
 
-// console.log("Workout Response: " + workoutResponse);
+export async function deleteWorkouts(workoutIds: number[]) {
+  const workoutsUrl = "/api/workouts";
 
-// workout.workoutExercises.forEach((workoutExercise) => {
-//   if (workoutExercise.workoutExerciseId) {
-//     const workoutExerciseData = {
-//       workoutExerciseId: workoutExercise.workoutExerciseId,
-//       exerciseId: workoutExercise.exerciseId,
-//       sets: workoutExercise.sets,
-//       positionInWorkout: workoutExercise.positionInWorkout,
-//     };
-//     const workoutExerciseUpdateResponse = makePutRequest(
-//       workoutExercisesUrl,
-//       workoutExerciseData
-//     );
-//   } else {
+  const deletedWorkoutPromises = workoutIds.map(async (id) => {
+    const data = {
+      workoutId: id,
+    };
 
-//     //create new
-//   }
+    await makeDeleteRequest(workoutsUrl, data);
+  });
 
-//ACTUALLY probably make a lsit of workoutData, and edit the workouts where an id exists
-// create where it doesnt, then will have to create based on that new id,
-//or even create based on the old id.
+  await Promise.all(deletedWorkoutPromises);
+}
 
-// return response;
-//call edit routine endpoint to edit routine name and length in days,
+export async function deleteWorkoutExercises(workoutExerciseIds: number[]) {
+  const workoutExercisesUrl = "/api/workout-exercises";
 
-//call edit workout endpoint to update workout name, position in the routine
-//call create workout endpoint to add a new workout with the new name and position
+  const deletedWorkoutPromises = workoutExerciseIds.map(async (id) => {
+    const data = {
+      workoutExerciseId: id,
+    };
 
-//call the edit workout exercise endpoint to
-// update the workout exercise's exerciseid, sets, and position
-//call the create workout exercise endpoint to add new workout exercises
+    await makeDeleteRequest(workoutExercisesUrl, data);
+  });
+
+  await Promise.all(deletedWorkoutPromises);
+}

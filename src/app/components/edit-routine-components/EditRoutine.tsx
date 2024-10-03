@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Button from "../shared-components/Button";
 import { testLog } from "@/app/utils/helpers";
 import { Routine } from "@/app/types/routine";
@@ -15,12 +15,20 @@ import { NewWorkout } from "@/app/types/newWorkout";
 import trashIcon from "../../assets/trashIcon_Black.png";
 import Image from "next/image";
 import ErrorCard from "../shared-components/ErrorCard";
-import { updateRoutine } from "@/app/services/apiService";
+import {
+  createRoutine,
+  deleteWorkoutExercises,
+  deleteWorkouts,
+  updateRoutine,
+} from "@/app/services/apiService";
 import CoverSpinner from "../shared-components/CoverSpinner";
 import { navigateRoutines } from "@/app/utils/navigationActions";
+import ConfirmationModal from "./ConfirmationModal";
+import _ from "lodash";
 
 interface EditRoutineProps {
   routine?: Routine;
+  refreshRoutines: () => void;
 }
 
 interface GroupedExercisesOption {
@@ -67,9 +75,11 @@ const customFilterOption = (
   return exerciseNameMatch || groupLabelMatch;
 };
 
-const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
-  const { exercises } = useUser();
-  const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
+const EditRoutine: React.FC<EditRoutineProps> = ({
+  routine,
+  refreshRoutines,
+}) => {
+  const { user, exercises } = useUser();
   const [routineName, setRoutineName] = useState<string>("");
   const [lengthInDays, setLengthInDays] = useState<string>("");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -85,30 +95,47 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
   const [newExerciseKeyCounter, setNewExerciseKeyCounter] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [confirmationText, setConfirmationText] = useState<string>("");
+  const [showConfirmationModal, setShowConfirmationModal] =
+    useState<boolean>(false);
+  const [isUpdateButtonDisabled, setIsUpdateButtonDisabled] =
+    useState<boolean>(true);
+
+  const initialWorkoutsRef = useRef<Workout[] | null>(null);
 
   const inputStyles: string =
-    "p-1 rounded-lg bg-transparent border-2 border-slate-100 placeholder-slate-400 focus:outline-0";
+    "p-1 rounded-lg bg-white border-2 border-slate-200 placeholder-slate-400 focus:outline-0";
 
   useEffect(() => {
-    setFilteredExercises(exercises);
     const groupedExercises = createGroupedExercisesList();
     setGroupedExerciseOptions(groupedExercises);
-  }, []);
+  }, [exercises]);
 
   useEffect(() => {
     if (routine) {
       setRoutineName(routine.routineName);
       setLengthInDays(routine.lengthInDays.toString());
       setWorkouts(routine.workouts || []);
+      initialWorkoutsRef.current = JSON.parse(
+        JSON.stringify(routine.workouts)
+      ).sort(
+        (a: Workout, b: Workout) => a.positionInRoutine - b.positionInRoutine
+      );
+      setConfirmationText("Routine Updated!");
+    } else {
+      setConfirmationText("Routine Created!");
     }
   }, [routine]);
-  useEffect(() => {
-    console.log("workouts updated:", workouts);
-  }, [workouts]);
 
   useEffect(() => {
-    console.log("length: ", lengthInDays);
-  }, [lengthInDays]);
+    if (initialWorkoutsRef.current) {
+      const sortedWorkouts = JSON.parse(JSON.stringify(workouts)).sort(
+        (a: Workout, b: Workout) => a.positionInRoutine - b.positionInRoutine
+      );
+      const isModified = _.isEqual(sortedWorkouts, initialWorkoutsRef.current);
+      setIsUpdateButtonDisabled(isModified);
+    }
+  }, [workouts]);
 
   function createGroupedExercisesList(): GroupedExercisesOption[] {
     const groupedOptions: GroupedExercisesOption[] = exercises.reduce(
@@ -148,11 +175,16 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
   };
 
   const handleLengthInDaysChange = (value: string) => {
-    console.log(lengthInDays);
     const flooredValue = Math.floor(parseInt(value));
     flooredValue > 8 || flooredValue < 1
       ? setLengthInDays(lengthInDays)
       : setLengthInDays(flooredValue.toString());
+
+    flooredValue < workouts.length
+      ? setErrorMessage(
+          "Length in days cannot be less than the number of workouts."
+        )
+      : setErrorMessage("");
   };
 
   const handleWorkoutNameChange = (index: number, newName: string) => {
@@ -203,7 +235,6 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
   ) => {
     if (parseInt(newSets) > 10 || parseInt(newSets) < 1) {
       newSets = inputSets[`${workoutIndex}-${exerciseIndex}`];
-      console.log(newSets);
     }
 
     setInputSets((prevInputs) => ({
@@ -289,6 +320,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
       setWorkouts((prevWorkouts) =>
         prevWorkouts.map((mappedWorkout, i) => {
           if (mappedWorkout.workoutId === workout.workoutId) {
+            setNewExerciseKeyCounter(newExerciseKeyCounter + 1);
             const maxPosition = Math.max(
               ...mappedWorkout.workoutExercises.map(
                 (exercise) => exercise.positionInWorkout
@@ -311,8 +343,6 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
               ],
             };
           }
-
-          setNewExerciseKeyCounter(newExerciseKeyCounter + 1);
           return mappedWorkout;
         })
       );
@@ -320,6 +350,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
       setWorkouts((prevWorkouts) =>
         prevWorkouts.map((mappedWorkout, i) => {
           if (mappedWorkout.uniqueKey === workout.uniqueKey) {
+            setNewExerciseKeyCounter(newExerciseKeyCounter + 1);
             const maxPosition = Math.max(
               ...mappedWorkout.workoutExercises.map(
                 (exercise) => exercise.positionInWorkout
@@ -342,18 +373,17 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
               ],
             };
           }
-
-          setNewExerciseKeyCounter(newExerciseKeyCounter + 1);
           return mappedWorkout;
         })
       );
     }
   }
 
-  //need to add an empty workoutExercise to the workout where add exercise was clicked ^^^
-
   function addWorkout(): void {
     setErrorMessage("");
+    const maxPosition = Math.max(
+      ...workouts.map((workout) => workout.positionInRoutine)
+    );
     if (workouts.length < parseInt(lengthInDays)) {
       setWorkouts([
         ...workouts,
@@ -361,9 +391,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
           workoutId: undefined,
           uniqueKey: newWorkoutKeyCounter,
           workoutName: "",
-          positionInRoutine:
-            Math.max(...workouts.map((workout) => workout.positionInRoutine)) +
-            1,
+          positionInRoutine: maxPosition === -Infinity ? 1 : maxPosition + 1,
           workoutExercises: [],
         },
       ]);
@@ -439,9 +467,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
     }
   }
 
-  const log = () => {
-    //update first
-    // console.log(routineName);
+  const submitUpdate = async () => {
     if (workouts.length > parseInt(lengthInDays)) {
       setErrorMessage(
         "Number of workouts must, at most, match the length of the routine."
@@ -449,343 +475,339 @@ const EditRoutine: React.FC<EditRoutineProps> = ({ routine }) => {
     } else {
       setIsSubmitting(true);
       if (routine) {
-        updateRoutine(routine.routineId, routineName, lengthInDays, workouts);
-        //^ This already waits to finish
-
-        //show the modal which will contain this button to confirm and move on
-        navigateRoutines();
+        await updateRoutine(
+          routine.routineId,
+          routineName,
+          lengthInDays,
+          workouts
+        );
       }
 
-      //delete after, to ensure values for the routine exist still, if that even matters
-      console.log(
-        "Existing Workout Exercises to Delete: ",
-        workoutExercisesToDelete
-      );
+      if (workoutExercisesToDelete) {
+        await deleteWorkoutExercises(workoutExercisesToDelete);
+      }
 
-      console.log("Existing Workouts to Delete", workoutsToDelete);
+      if (workoutsToDelete) {
+        await deleteWorkouts(workoutsToDelete);
+      }
+
+      refreshRoutines();
+
+      setShowConfirmationModal(true);
     }
   };
 
-  if (!routine) {
-    return (
-      <>
-        <h1 className="text-3xl font-bold text-orange-500">Creating</h1>
-        <table>
-          <tbody>
-            <tr>
-              <td className="p-3 pl-0">
-                <label className="font-bold text-lg">Routine Name</label>
-              </td>
-              <td className="p-3">
-                <Input
-                  placeholder="Routine Name"
-                  type="text"
-                  styles={inputStyles}
-                  onChange={handleRoutineNameChange}
-                  value={routineName}
-                ></Input>
-              </td>
-            </tr>
-            <tr>
-              <td className="p-3 pl-0">
-                <label className="font-bold text-lg">Length In Days</label>
-              </td>
-              <td className="p-3">
-                <Input
-                  placeholder="Length In Days"
-                  type="number"
-                  styles={inputStyles}
-                  onChange={handleLengthInDaysChange}
-                  value={lengthInDays}
-                ></Input>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </>
-    );
-  }
+  const submitCreation = async () => {
+    if (workouts.length > parseInt(lengthInDays)) {
+      setErrorMessage(
+        "Number of workouts must, at most, match the length of the routine."
+      );
+    } else {
+      setIsSubmitting(true);
+      if (user) {
+        await createRoutine(user?.userId, routineName, lengthInDays, workouts);
+      }
 
-  if (routine) {
-    return (
-      <>
-        {isSubmitting && <CoverSpinner></CoverSpinner>}
+      refreshRoutines();
+      setShowConfirmationModal(true);
+    }
+  };
+
+  return (
+    <>
+      {isSubmitting && <CoverSpinner></CoverSpinner>}
+      {showConfirmationModal && (
+        <ConfirmationModal
+          showModal={showConfirmationModal}
+          confirmationText={confirmationText}
+        ></ConfirmationModal>
+      )}
+      {routine ? (
         <h1 className="text-3xl font-bold text-orange-500">Editing</h1>
-        <table className="border-collapse">
-          <tbody>
-            <tr>
-              <td className="p-3 pl-0">
-                <label className="font-bold text-lg">Routine Name</label>
-              </td>
-              <td className="p-3 border-b-black">
-                <Input
-                  placeholder="Routine Name"
-                  type="text"
-                  styles={inputStyles}
-                  onChange={handleRoutineNameChange}
-                  value={routineName}
-                ></Input>
-              </td>
-            </tr>
-            <tr>
-              <td className="p-3 pl-0">
-                <label className="font-bold text-lg">Length In Days</label>
-              </td>
-              <td className="p-3">
-                <Input
-                  placeholder="Length In Days"
-                  type="number"
-                  styles={inputStyles}
-                  onChange={handleLengthInDaysChange}
-                  value={lengthInDays}
-                ></Input>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <h1 className="text-2xl font-bold text-slate-300">Workouts</h1>
-              </td>
-            </tr>
-            {workouts
-              .sort((a, b) => a.positionInRoutine - b.positionInRoutine)
-              .map((workout, workoutIndex) => (
-                <React.Fragment
-                  key={
-                    workout.workoutId ||
-                    `${workout.workoutId + "-" + workout.uniqueKey}`
-                  }
-                >
-                  <tr>
-                    <td className="p-3 pl-0 flex gap-2">
-                      <button
-                        onClick={() =>
-                          swapWorkouts(
-                            workoutIndex,
-                            workoutIndex - 1,
-                            workout.positionInRoutine,
-                            workout.positionInRoutine - 1
-                          )
-                        }
-                        disabled={workoutIndex === 0}
-                        className={`${
-                          workoutIndex === 0
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
-                        } p-1 font-bold text-xl border rounded-full `}
-                      >
-                        &nbsp;↑&nbsp;
-                      </button>
-                      <button
-                        onClick={() =>
-                          swapWorkouts(
-                            workoutIndex,
-                            workoutIndex + 1,
-                            workout.positionInRoutine,
-                            workout.positionInRoutine + 1
-                          )
-                        }
-                        disabled={workoutIndex === workouts.length - 1}
-                        className={`${
-                          workoutIndex === workouts.length - 1
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
-                        } p-1 font-bold text-xl border rounded-full`}
-                      >
-                        &nbsp;↓&nbsp;
-                      </button>
-                      <label className="font-bold text-lg">Workout Name</label>
-                    </td>
-                    <td className="p-3">
-                      <Input
-                        placeholder="Workout Name"
-                        type="text"
-                        styles={inputStyles}
-                        onChange={(newName) =>
-                          handleWorkoutNameChange(workoutIndex, newName)
-                        }
-                        value={workout.workoutName}
-                      />
-                    </td>
-                    <td></td>
-                    <td></td>
-                    <td className="p-3">
-                      <Image
-                        className="hover:cursor-pointer"
-                        src={trashIcon}
-                        width={25}
-                        height={25}
-                        alt="delete"
-                        onClick={() => removeWorkout(workout)}
-                      ></Image>
-                    </td>
-                  </tr>
-                  {workout.workoutExercises
-                    .sort((a, b) => a.positionInWorkout - b.positionInWorkout)
-                    .map((exercise, exerciseIndex) => (
-                      <React.Fragment
-                        key={
-                          exercise.workoutExerciseId ||
-                          `${workout.uniqueKey + "-" + exercise.uniqueKey}`
-                        }
-                      >
-                        {/* <tr className="border border-transparent border-t-slate-300"> */}
-                        <tr>
-                          <td className="p-3 pl-5 pr-0 flex gap-2">
-                            <button
-                              onClick={() =>
-                                swapExercises(
-                                  workoutIndex,
-                                  exerciseIndex,
-                                  exerciseIndex - 1,
-                                  exercise.positionInWorkout,
-                                  exercise.positionInWorkout - 1
-                                )
-                              }
-                              disabled={exerciseIndex === 0}
-                              className={`${
-                                exerciseIndex === 0
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
-                              } p-1 font-bold text-xl border rounded-full `}
-                            >
-                              &nbsp;↑&nbsp;
-                            </button>
-                            <button
-                              onClick={() =>
-                                swapExercises(
-                                  workoutIndex,
-                                  exerciseIndex,
-                                  exerciseIndex + 1,
-                                  exercise.positionInWorkout,
-                                  exercise.positionInWorkout + 1
-                                )
-                              }
-                              disabled={
-                                exerciseIndex ===
-                                workout.workoutExercises.length - 1
-                              }
-                              className={`${
-                                exerciseIndex ===
-                                workout.workoutExercises.length - 1
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
-                              } p-1 font-bold text-xl border rounded-full`}
-                            >
-                              &nbsp;↓&nbsp;
-                            </button>
-                            <label className="font-bold text-lg">
-                              Exercise
-                            </label>
-                          </td>
-                          <td className="p-3">
-                            <Select
-                              options={groupedExerciseOptions}
-                              value={groupedExerciseOptions
-                                .find((group) =>
-                                  group.options.find(
-                                    (option) =>
-                                      option.value.exerciseId ===
-                                      exercise.exerciseId
-                                  )
-                                )
-                                ?.options.find(
+      ) : (
+        <h1 className="text-3xl font-bold text-orange-500">Creating</h1>
+      )}
+      <table className="border-collapse w-full">
+        <tbody>
+          <tr>
+            <td className="p-3 pl-0">
+              <label className="font-bold text-lg">Routine Name</label>
+            </td>
+            <td className="p-3 border-b-black">
+              <Input
+                placeholder="Routine Name"
+                type="text"
+                styles={inputStyles}
+                onChange={handleRoutineNameChange}
+                value={routineName}
+              ></Input>
+            </td>
+          </tr>
+          <tr>
+            <td className="p-3 pl-0">
+              <label className="font-bold text-lg">Length in Days</label>
+            </td>
+            <td className="p-3">
+              <Input
+                placeholder="Length In Days"
+                type="number"
+                styles={inputStyles}
+                onChange={handleLengthInDaysChange}
+                value={lengthInDays}
+              ></Input>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h1 className="text-2xl font-bold text-slate-300">Workouts</h1>
+            </td>
+          </tr>
+          {workouts
+            .sort((a, b) => a.positionInRoutine - b.positionInRoutine)
+            .map((workout, workoutIndex) => (
+              <React.Fragment
+                key={
+                  workout.workoutId ||
+                  `${workout.workoutId + "-" + workout.uniqueKey}`
+                }
+              >
+                <tr className="hover:bg-slate-50">
+                  <td className="p-3 pl-0 flex gap-2">
+                    <button
+                      onClick={() =>
+                        swapWorkouts(
+                          workoutIndex,
+                          workoutIndex - 1,
+                          workout.positionInRoutine,
+                          workout.positionInRoutine - 1
+                        )
+                      }
+                      disabled={workoutIndex === 0}
+                      className={`${
+                        workoutIndex === 0
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      } p-1 font-bold text-xl border rounded-full bg-white `}
+                    >
+                      &nbsp;↑&nbsp;
+                    </button>
+                    <button
+                      onClick={() =>
+                        swapWorkouts(
+                          workoutIndex,
+                          workoutIndex + 1,
+                          workout.positionInRoutine,
+                          workout.positionInRoutine + 1
+                        )
+                      }
+                      disabled={workoutIndex === workouts.length - 1}
+                      className={`${
+                        workoutIndex === workouts.length - 1
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      } p-1 font-bold text-xl border rounded-full bg-white`}
+                    >
+                      &nbsp;↓&nbsp;
+                    </button>
+                    <label className="font-bold text-lg">Workout Name</label>
+                  </td>
+                  <td className="p-3">
+                    <Input
+                      placeholder="Workout Name"
+                      type="text"
+                      styles={inputStyles}
+                      onChange={(newName) =>
+                        handleWorkoutNameChange(workoutIndex, newName)
+                      }
+                      value={workout.workoutName}
+                    />
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td className="p-3">
+                    <img
+                      className="hover:cursor-pointer min-w-6"
+                      src={trashIcon.src}
+                      width={24}
+                      height={24}
+                      alt="delete"
+                      onClick={() => removeWorkout(workout)}
+                    ></img>
+                  </td>
+                </tr>
+                {workout.workoutExercises
+                  .sort((a, b) => a.positionInWorkout - b.positionInWorkout)
+                  .map((exercise, exerciseIndex) => (
+                    <React.Fragment
+                      key={
+                        exercise.workoutExerciseId ||
+                        `${workout.uniqueKey + "-" + exercise.uniqueKey}`
+                      }
+                    >
+                      {/* <tr className="border border-transparent border-t-slate-300"> */}
+                      <tr className="hover:bg-slate-50">
+                        <td className="p-3 pl-5 pr-0 flex gap-2">
+                          <button
+                            onClick={() =>
+                              swapExercises(
+                                workoutIndex,
+                                exerciseIndex,
+                                exerciseIndex - 1,
+                                exercise.positionInWorkout,
+                                exercise.positionInWorkout - 1
+                              )
+                            }
+                            disabled={exerciseIndex === 0}
+                            className={`${
+                              exerciseIndex === 0
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            } p-1 font-bold text-xl border rounded-full bg-white`}
+                          >
+                            &nbsp;↑&nbsp;
+                          </button>
+                          <button
+                            onClick={() =>
+                              swapExercises(
+                                workoutIndex,
+                                exerciseIndex,
+                                exerciseIndex + 1,
+                                exercise.positionInWorkout,
+                                exercise.positionInWorkout + 1
+                              )
+                            }
+                            disabled={
+                              exerciseIndex ===
+                              workout.workoutExercises.length - 1
+                            }
+                            className={`${
+                              exerciseIndex ===
+                              workout.workoutExercises.length - 1
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            } p-1 font-bold text-xl border rounded-full bg-white`}
+                          >
+                            &nbsp;↓&nbsp;
+                          </button>
+                          <label className="font-bold text-lg">Exercise</label>
+                        </td>
+                        <td className="p-3">
+                          <Select
+                            options={groupedExerciseOptions}
+                            value={groupedExerciseOptions
+                              .find((group) =>
+                                group.options.find(
                                   (option) =>
                                     option.value.exerciseId ===
                                     exercise.exerciseId
-                                )}
-                              styles={customBasicStyles}
-                              onChange={(newValue) => {
-                                if (newValue) {
-                                  handleExerciseChange(
-                                    exerciseIndex,
-                                    workoutIndex,
-                                    newValue.value
-                                  );
-                                }
-                              }}
-                              filterOption={customFilterOption}
-                            ></Select>
-                          </td>
-                          <td className="p-3 pl-5 pr-0">
-                            <label className="font-bold text-lg">Sets</label>
-                          </td>
-                          <td className="p-3">
-                            <Input
-                              placeholder="Sets"
-                              type="number"
-                              styles={inputStyles + " w-16"}
-                              onChange={(newSets) =>
-                                handleExerciseSetsChange(
+                                )
+                              )
+                              ?.options.find(
+                                (option) =>
+                                  option.value.exerciseId ===
+                                  exercise.exerciseId
+                              )}
+                            styles={customBasicStyles}
+                            onChange={(newValue) => {
+                              if (newValue) {
+                                handleExerciseChange(
                                   exerciseIndex,
                                   workoutIndex,
-                                  newSets
-                                )
+                                  newValue.value
+                                );
                               }
-                              value={
-                                inputSets[`${workoutIndex}-${exerciseIndex}`] ??
-                                exercise.sets.toString()
-                              }
-                            />
-                          </td>
-                          <td className="p-3">
-                            <Image
-                              className="hover:cursor-pointer"
-                              src={trashIcon}
-                              width={20}
-                              height={20}
-                              alt="delete"
-                              onClick={() =>
-                                removeExerciseFromWorkout(
-                                  workoutIndex,
-                                  exerciseIndex,
-                                  exercise
-                                )
-                              }
-                            ></Image>
-                          </td>
-                        </tr>
-                      </React.Fragment>
-                    ))}
+                            }}
+                            filterOption={customFilterOption}
+                          ></Select>
+                        </td>
+                        <td className="p-3 pl-5 pr-0">
+                          <label className="font-bold text-lg">Sets</label>
+                        </td>
+                        <td className="p-3">
+                          <Input
+                            placeholder="Sets"
+                            type="number"
+                            styles={inputStyles + " w-16"}
+                            onChange={(newSets) =>
+                              handleExerciseSetsChange(
+                                exerciseIndex,
+                                workoutIndex,
+                                newSets
+                              )
+                            }
+                            value={
+                              inputSets[`${workoutIndex}-${exerciseIndex}`] ??
+                              exercise.sets.toString()
+                            }
+                          />
+                        </td>
+                        <td className="p-3">
+                          <img
+                            className="hover:cursor-pointer min-w-6"
+                            src={trashIcon.src}
+                            width={24}
+                            height={24}
+                            alt="delete"
+                            onClick={() =>
+                              removeExerciseFromWorkout(
+                                workoutIndex,
+                                exerciseIndex,
+                                exercise
+                              )
+                            }
+                          ></img>
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
 
-                  <tr>
-                    <td className="pl-5 pb-4" colSpan={1}>
-                      <Button
-                        label="Add Exercise"
-                        handleClick={() => addExerciseToWorkout(workout)}
-                        customStyles="p-0 pt-1 pb-1 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-50"
-                      ></Button>
-                    </td>
-                  </tr>
-                </React.Fragment>
-              ))}
+                <tr>
+                  <td className="pl-5 pb-4 pt-4" colSpan={1}>
+                    <Button
+                      label="Add Exercise"
+                      handleClick={() => addExerciseToWorkout(workout)}
+                      customStyles="p-0 pt-1 pb-1 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-50"
+                    ></Button>
+                  </td>
+                </tr>
+              </React.Fragment>
+            ))}
 
-            <tr>
-              <td className="pt-3 pl-5 " colSpan={4}>
-                {errorMessage.length > 0 && (
-                  <>
-                    <ErrorCard message={errorMessage}></ErrorCard>
-                    <br></br>
-                  </>
-                )}
+          <tr>
+            <td className="pt-3 pl-5 " colSpan={4}>
+              {errorMessage.length > 0 && (
+                <>
+                  <ErrorCard message={errorMessage}></ErrorCard>
+                  <br></br>
+                </>
+              )}
 
-                <Button
-                  label="Add Workout"
-                  handleClick={() => addWorkout()}
-                  customStyles="p-0 pt-1 pb-1 rounded-lg text-white"
-                ></Button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="pt-5">
+              <Button
+                label="Add Workout"
+                handleClick={() => addWorkout()}
+                customStyles="p-0 pt-1 pb-1 rounded-lg text-white"
+              ></Button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div className="pt-5">
+        {routine ? (
           <Button
-            label="Save"
-            handleClick={log}
+            label="Update"
+            handleClick={submitUpdate}
+            isDisabled={isUpdateButtonDisabled}
+            customStyles="text-white disabled:bg-orange-200 disabled:cursor-not-allowed"
+          ></Button>
+        ) : (
+          <Button
+            label="Create"
+            handleClick={submitCreation}
             customStyles="text-white"
           ></Button>
-        </div>
-      </>
-    );
-  }
+        )}
+      </div>
+    </>
+  );
 };
 export default EditRoutine;

@@ -26,7 +26,7 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     if (user && !user.routines) {
-      getRoutines(user?.userId).then((fetchedRoutines) => {
+      getRoutines(user.userId).then((fetchedRoutines) => {
         setUser({ ...user, routines: fetchedRoutines });
         console.log(fetchedRoutines);
       });
