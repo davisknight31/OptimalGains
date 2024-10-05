@@ -1,17 +1,17 @@
 // "use client";
 import React from "react";
 import checkmark from "../../assets/confirmation_checkmark.png";
-import ButtonComponent from "../shared-components/Button";
+import ButtonComponent from "./Button";
 import { navigateRoutines } from "@/app/utils/navigationActions";
 
-interface ConfirmationModalProps {
+interface SuccessModalProps {
   showModal: boolean;
-  confirmationText: string;
+  successText: string;
 }
 
-const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+const SuccessModal: React.FC<SuccessModalProps> = ({
   showModal,
-  confirmationText,
+  successText,
 }) => {
   return (
     <>
@@ -20,7 +20,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <div className="w-11/12 sm:w-2/3 md:w-2/4 bg-white rounded-xl flex flex-col items-center p-8">
             <img src={checkmark.src} width={150}></img>
             <h1 className="font-bold text-4xl pb-5 text-center">
-              {confirmationText}
+              {successText}
             </h1>
             <ButtonComponent
               label="Return to Routines"
@@ -34,4 +34,4 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   );
 };
 
-export default ConfirmationModal;
+export default SuccessModal;

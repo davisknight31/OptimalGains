@@ -23,7 +23,7 @@ import {
 } from "@/app/services/apiService";
 import CoverSpinner from "../shared-components/CoverSpinner";
 import { navigateRoutines } from "@/app/utils/navigationActions";
-import ConfirmationModal from "./ConfirmationModal";
+import SuccessModal from "../shared-components/SuccessModal";
 import _ from "lodash";
 
 interface EditRoutineProps {
@@ -513,140 +513,484 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
     }
   };
 
+  // return (
+  //   <>
+  //     {isSubmitting && <CoverSpinner></CoverSpinner>}
+  //     {showConfirmationModal && (
+  //       <SuccessModal
+  //         showModal={showConfirmationModal}
+  //         successText={confirmationText}
+  //       ></SuccessModal>
+  //     )}
+  //     {routine ? (
+  //       <h1 className="text-3xl font-bold text-orange-500">Editing</h1>
+  //     ) : (
+  //       <h1 className="text-3xl font-bold text-orange-500">Creating</h1>
+  //     )}
+  //     <table className="border-collapse w-full">
+  //       <tbody>
+  //         <tr>
+  //           <td className="p-3 pl-0">
+  //             <label className="font-bold text-lg">Routine Name</label>
+  //           </td>
+  //           <td className="p-3 border-b-black">
+  //             <Input
+  //               placeholder="Routine Name"
+  //               type="text"
+  //               styles={inputStyles}
+  //               onChange={handleRoutineNameChange}
+  //               value={routineName}
+  //             ></Input>
+  //           </td>
+  //         </tr>
+  //         <tr>
+  //           <td className="p-3 pl-0">
+  //             <label className="font-bold text-lg">Length in Days</label>
+  //           </td>
+  //           <td className="p-3">
+  //             <Input
+  //               placeholder="Length In Days"
+  //               type="number"
+  //               styles={inputStyles}
+  //               onChange={handleLengthInDaysChange}
+  //               value={lengthInDays}
+  //             ></Input>
+  //           </td>
+  //         </tr>
+  //       </tbody>
+  //     </table>
+  //     <h1 className="text-2xl font-bold text-slate-300">Workouts</h1>
+  //     <table className="border-collapse w-full">
+  //       <tbody>
+  //         {/* <tr>
+  //           <td>
+  //             <h1 className="text-2xl font-bold text-slate-300">Workouts</h1>
+  //           </td>
+  //         </tr> */}
+  //         {workouts
+  //           .sort((a, b) => a.positionInRoutine - b.positionInRoutine)
+  //           .map((workout, workoutIndex) => (
+  //             <React.Fragment
+  //               key={
+  //                 workout.workoutId ||
+  //                 `${workout.workoutId + "-" + workout.uniqueKey}`
+  //               }
+  //             >
+  //               <tr className="hover:bg-slate-50">
+  //                 <td className="p-3 pl-0 flex gap-2">
+  //                   <button
+  //                     onClick={() =>
+  //                       swapWorkouts(
+  //                         workoutIndex,
+  //                         workoutIndex - 1,
+  //                         workout.positionInRoutine,
+  //                         workout.positionInRoutine - 1
+  //                       )
+  //                     }
+  //                     disabled={workoutIndex === 0}
+  //                     className={`${
+  //                       workoutIndex === 0
+  //                         ? "opacity-50 cursor-not-allowed"
+  //                         : ""
+  //                     } p-1 font-bold text-xl border rounded-full bg-white `}
+  //                   >
+  //                     &nbsp;↑&nbsp;
+  //                   </button>
+  //                   <button
+  //                     onClick={() =>
+  //                       swapWorkouts(
+  //                         workoutIndex,
+  //                         workoutIndex + 1,
+  //                         workout.positionInRoutine,
+  //                         workout.positionInRoutine + 1
+  //                       )
+  //                     }
+  //                     disabled={workoutIndex === workouts.length - 1}
+  //                     className={`${
+  //                       workoutIndex === workouts.length - 1
+  //                         ? "opacity-50 cursor-not-allowed"
+  //                         : ""
+  //                     } p-1 font-bold text-xl border rounded-full bg-white`}
+  //                   >
+  //                     &nbsp;↓&nbsp;
+  //                   </button>
+  //                 </td>
+  //                 <td className="p-3">
+  //                   <label className="font-bold text-lg">Workout Name</label>
+  //                 </td>
+  //                 <td>
+  //                   <Input
+  //                     placeholder="Workout Name"
+  //                     type="text"
+  //                     styles={inputStyles}
+  //                     onChange={(newName) =>
+  //                       handleWorkoutNameChange(workoutIndex, newName)
+  //                     }
+  //                     value={workout.workoutName}
+  //                   />
+  //                 </td>
+  //                 <td></td>
+  //                 <td></td>
+  //                 <td className="p-3">
+  //                   <img
+  //                     className="hover:cursor-pointer min-w-6"
+  //                     src={trashIcon.src}
+  //                     width={24}
+  //                     height={24}
+  //                     alt="delete"
+  //                     onClick={() => removeWorkout(workout)}
+  //                   ></img>
+  //                 </td>
+  //               </tr>
+  //               {workout.workoutExercises
+  //                 .sort((a, b) => a.positionInWorkout - b.positionInWorkout)
+  //                 .map((exercise, exerciseIndex) => (
+  //                   <React.Fragment
+  //                     key={
+  //                       exercise.workoutExerciseId ||
+  //                       `${workout.uniqueKey + "-" + exercise.uniqueKey}`
+  //                     }
+  //                   >
+  //                     {/* <tr className="border border-transparent border-t-slate-300"> */}
+  //                     <tr className="hover:bg-slate-50">
+  //                       <td className="p-3 pl-5 pr-0 flex gap-2">
+  //                         <button
+  //                           onClick={() =>
+  //                             swapExercises(
+  //                               workoutIndex,
+  //                               exerciseIndex,
+  //                               exerciseIndex - 1,
+  //                               exercise.positionInWorkout,
+  //                               exercise.positionInWorkout - 1
+  //                             )
+  //                           }
+  //                           disabled={exerciseIndex === 0}
+  //                           className={`${
+  //                             exerciseIndex === 0
+  //                               ? "opacity-50 cursor-not-allowed"
+  //                               : ""
+  //                           } p-1 font-bold text-xl border rounded-full bg-white`}
+  //                         >
+  //                           &nbsp;↑&nbsp;
+  //                         </button>
+  //                         <button
+  //                           onClick={() =>
+  //                             swapExercises(
+  //                               workoutIndex,
+  //                               exerciseIndex,
+  //                               exerciseIndex + 1,
+  //                               exercise.positionInWorkout,
+  //                               exercise.positionInWorkout + 1
+  //                             )
+  //                           }
+  //                           disabled={
+  //                             exerciseIndex ===
+  //                             workout.workoutExercises.length - 1
+  //                           }
+  //                           className={`${
+  //                             exerciseIndex ===
+  //                             workout.workoutExercises.length - 1
+  //                               ? "opacity-50 cursor-not-allowed"
+  //                               : ""
+  //                           } p-1 font-bold text-xl border rounded-full bg-white`}
+  //                         >
+  //                           &nbsp;↓&nbsp;
+  //                         </button>
+  //                       </td>
+  //                       <td className="p-3 pl-5 pr-0">
+  //                         <label className="font-bold text-lg w-fit">
+  //                           Exercise
+  //                         </label>
+  //                       </td>
+  //                       <td className="p-3 pl-5 pr-0">
+  //                         <Select
+  //                           options={groupedExerciseOptions}
+  //                           value={groupedExerciseOptions
+  //                             .find((group) =>
+  //                               group.options.find(
+  //                                 (option) =>
+  //                                   option.value.exerciseId ===
+  //                                   exercise.exerciseId
+  //                               )
+  //                             )
+  //                             ?.options.find(
+  //                               (option) =>
+  //                                 option.value.exerciseId ===
+  //                                 exercise.exerciseId
+  //                             )}
+  //                           styles={customBasicStyles}
+  //                           onChange={(newValue) => {
+  //                             if (newValue) {
+  //                               handleExerciseChange(
+  //                                 exerciseIndex,
+  //                                 workoutIndex,
+  //                                 newValue.value
+  //                               );
+  //                             }
+  //                           }}
+  //                           filterOption={customFilterOption}
+  //                         ></Select>
+  //                       </td>
+  //                       <td className="p-3">
+  //                         <label className="font-bold text-lg">Sets</label>
+  //                       </td>
+  //                       <td className="p-3">
+  //                         <Input
+  //                           placeholder="Sets"
+  //                           type="number"
+  //                           styles={inputStyles + " w-16"}
+  //                           onChange={(newSets) =>
+  //                             handleExerciseSetsChange(
+  //                               exerciseIndex,
+  //                               workoutIndex,
+  //                               newSets
+  //                             )
+  //                           }
+  //                           value={
+  //                             inputSets[`${workoutIndex}-${exerciseIndex}`] ??
+  //                             exercise.sets.toString()
+  //                           }
+  //                         />
+  //                       </td>
+  //                       <td className="p-3">
+  //                         <img
+  //                           className="hover:cursor-pointer min-w-6"
+  //                           src={trashIcon.src}
+  //                           width={24}
+  //                           height={24}
+  //                           alt="delete"
+  //                           onClick={() =>
+  //                             removeExerciseFromWorkout(
+  //                               workoutIndex,
+  //                               exerciseIndex,
+  //                               exercise
+  //                             )
+  //                           }
+  //                         ></img>
+  //                       </td>
+  //                     </tr>
+  //                   </React.Fragment>
+  //                 ))}
+
+  //               <tr>
+  //                 <td></td>
+  //                 <td className="pl-5 pb-4 pt-4" colSpan={4}>
+  //                   <Button
+  //                     label="Add Exercise"
+  //                     handleClick={() => addExerciseToWorkout(workout)}
+  //                     customStyles="p-0 pt-1 pb-1 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-50"
+  //                   ></Button>
+  //                 </td>
+  //                 <td></td>
+  //                 <td></td>
+  //                 <td></td>
+  //                 <td></td>
+  //               </tr>
+  //             </React.Fragment>
+  //           ))}
+
+  //         <tr>
+  //           <td className="pt-3 pl-5 " colSpan={5}>
+  //             {errorMessage.length > 0 && (
+  //               <>
+  //                 <ErrorCard message={errorMessage}></ErrorCard>
+  //                 <br></br>
+  //               </>
+  //             )}
+
+  //             <Button
+  //               label="Add Workout"
+  //               handleClick={() => addWorkout()}
+  //               customStyles="p-0 pt-1 pb-1 rounded-lg text-white"
+  //             ></Button>
+  //           </td>
+  //           <td></td>
+  //         </tr>
+  //       </tbody>
+  //     </table>
+  //     <div className="pt-5">
+  //       {routine ? (
+  //         <Button
+  //           label="Update"
+  //           handleClick={submitUpdate}
+  //           isDisabled={isUpdateButtonDisabled}
+  //           customStyles="text-white disabled:bg-orange-200 disabled:cursor-not-allowed"
+  //         ></Button>
+  //       ) : (
+  //         <Button
+  //           label="Create"
+  //           handleClick={submitCreation}
+  //           customStyles="text-white"
+  //         ></Button>
+  //       )}
+  //     </div>
+  //   </>
+  // );
+
   return (
     <>
-      {isSubmitting && <CoverSpinner></CoverSpinner>}
+      {isSubmitting && <CoverSpinner />}
       {showConfirmationModal && (
-        <ConfirmationModal
+        <SuccessModal
           showModal={showConfirmationModal}
-          confirmationText={confirmationText}
-        ></ConfirmationModal>
+          successText={confirmationText}
+        />
       )}
       {routine ? (
-        <h1 className="text-3xl font-bold text-orange-500">Editing</h1>
+        <h1 className="text-2xl font-bold text-orange-500 text-center">
+          Editing Routine
+        </h1>
       ) : (
-        <h1 className="text-3xl font-bold text-orange-500">Creating</h1>
+        <h1 className="text-2xl font-bold text-orange-500 text-center">
+          Creating Routine
+        </h1>
       )}
-      <table className="border-collapse w-full">
-        <tbody>
-          <tr>
-            <td className="p-3 pl-0">
-              <label className="font-bold text-lg">Routine Name</label>
-            </td>
-            <td className="p-3 border-b-black">
-              <Input
-                placeholder="Routine Name"
-                type="text"
-                styles={inputStyles}
-                onChange={handleRoutineNameChange}
-                value={routineName}
-              ></Input>
-            </td>
-          </tr>
-          <tr>
-            <td className="p-3 pl-0">
-              <label className="font-bold text-lg">Length in Days</label>
-            </td>
-            <td className="p-3">
-              <Input
-                placeholder="Length In Days"
-                type="number"
-                styles={inputStyles}
-                onChange={handleLengthInDaysChange}
-                value={lengthInDays}
-              ></Input>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <h1 className="text-2xl font-bold text-slate-300">Workouts</h1>
-            </td>
-          </tr>
+
+      <div className="p-4">
+        {/* Routine Details */}
+        <div className="mb-4 flex">
+          <label className="font-bold text-lg block">Routine Name</label>
+          <Input
+            placeholder="Routine Name"
+            type="text"
+            styles={inputStyles}
+            onChange={handleRoutineNameChange}
+            value={routineName}
+          />
+        </div>
+        <div className="mb-4">
+          <label className="font-bold text-lg block">Length in Days</label>
+          <Input
+            placeholder="Length In Days"
+            type="number"
+            styles={inputStyles}
+            onChange={handleLengthInDaysChange}
+            value={lengthInDays}
+          />
+        </div>
+
+        {/* Workouts Section */}
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-slate-300">Workouts</h2>
           {workouts
             .sort((a, b) => a.positionInRoutine - b.positionInRoutine)
             .map((workout, workoutIndex) => (
-              <React.Fragment
-                key={
-                  workout.workoutId ||
-                  `${workout.workoutId + "-" + workout.uniqueKey}`
-                }
-              >
-                <tr className="hover:bg-slate-50">
-                  <td className="p-3 pl-0 flex gap-2">
-                    <button
-                      onClick={() =>
-                        swapWorkouts(
-                          workoutIndex,
-                          workoutIndex - 1,
-                          workout.positionInRoutine,
-                          workout.positionInRoutine - 1
-                        )
-                      }
-                      disabled={workoutIndex === 0}
-                      className={`${
-                        workoutIndex === 0
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      } p-1 font-bold text-xl border rounded-full bg-white `}
-                    >
-                      &nbsp;↑&nbsp;
-                    </button>
-                    <button
-                      onClick={() =>
-                        swapWorkouts(
-                          workoutIndex,
-                          workoutIndex + 1,
-                          workout.positionInRoutine,
-                          workout.positionInRoutine + 1
-                        )
-                      }
-                      disabled={workoutIndex === workouts.length - 1}
-                      className={`${
-                        workoutIndex === workouts.length - 1
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      } p-1 font-bold text-xl border rounded-full bg-white`}
-                    >
-                      &nbsp;↓&nbsp;
-                    </button>
-                    <label className="font-bold text-lg">Workout Name</label>
-                  </td>
-                  <td className="p-3">
-                    <Input
-                      placeholder="Workout Name"
-                      type="text"
-                      styles={inputStyles}
-                      onChange={(newName) =>
-                        handleWorkoutNameChange(workoutIndex, newName)
-                      }
-                      value={workout.workoutName}
-                    />
-                  </td>
-                  <td></td>
-                  <td></td>
-                  <td className="p-3">
-                    <img
-                      className="hover:cursor-pointer min-w-6"
-                      src={trashIcon.src}
-                      width={24}
-                      height={24}
-                      alt="delete"
-                      onClick={() => removeWorkout(workout)}
-                    ></img>
-                  </td>
-                </tr>
-                {workout.workoutExercises
-                  .sort((a, b) => a.positionInWorkout - b.positionInWorkout)
-                  .map((exercise, exerciseIndex) => (
-                    <React.Fragment
-                      key={
-                        exercise.workoutExerciseId ||
-                        `${workout.uniqueKey + "-" + exercise.uniqueKey}`
-                      }
-                    >
-                      {/* <tr className="border border-transparent border-t-slate-300"> */}
-                      <tr className="hover:bg-slate-50">
-                        <td className="p-3 pl-5 pr-0 flex gap-2">
+              <div key={workout.workoutId || `${workout.uniqueKey}`}>
+                {/* Workout Card */}
+                <div className="bg-slate-50 p-4 rounded-lg mb-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-lg">{workout.workoutName}</h3>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() =>
+                          swapWorkouts(
+                            workoutIndex,
+                            workoutIndex - 1,
+                            workout.positionInRoutine,
+                            workout.positionInRoutine - 1
+                          )
+                        }
+                        disabled={workoutIndex === 0}
+                        className={`${
+                          workoutIndex === 0
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        } p-1 text-xl`}
+                      >
+                        ↑
+                      </button>
+                      <button
+                        onClick={() =>
+                          swapWorkouts(
+                            workoutIndex,
+                            workoutIndex + 1,
+                            workout.positionInRoutine,
+                            workout.positionInRoutine + 1
+                          )
+                        }
+                        disabled={workoutIndex === workouts.length - 1}
+                        className={`${
+                          workoutIndex === workouts.length - 1
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        } p-1 text-xl`}
+                      >
+                        ↓
+                      </button>
+                      <img
+                        className="hover:cursor-pointer"
+                        src={trashIcon.src}
+                        width={24}
+                        height={24}
+                        alt="delete"
+                        onClick={() => removeWorkout(workout)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Exercise List */}
+                  {workout.workoutExercises
+                    .sort((a, b) => a.positionInWorkout - b.positionInWorkout)
+                    .map((exercise, exerciseIndex) => (
+                      <div
+                        key={
+                          exercise.workoutExerciseId ||
+                          `${workout.uniqueKey}-${exercise.uniqueKey}`
+                        }
+                        className="mt- p-2 rounded-lg  flex justify-between items-center"
+                      >
+                        <div className="flex items-center gap-5">
+                          <span className="font-bold">
+                            Exercise:<br></br>
+                            <Select
+                              options={groupedExerciseOptions}
+                              value={groupedExerciseOptions
+                                .find((group) =>
+                                  group.options.find(
+                                    (option) =>
+                                      option.value.exerciseId ===
+                                      exercise.exerciseId
+                                  )
+                                )
+                                ?.options.find(
+                                  (option) =>
+                                    option.value.exerciseId ===
+                                    exercise.exerciseId
+                                )}
+                              styles={customBasicStyles}
+                              onChange={(newValue) => {
+                                if (newValue) {
+                                  handleExerciseChange(
+                                    exerciseIndex,
+                                    workoutIndex,
+                                    newValue.value
+                                  );
+                                }
+                              }}
+                              filterOption={customFilterOption}
+                            ></Select>
+                          </span>
+                          <span className="font-bold">
+                            Sets:<br></br>
+                            <Input
+                              placeholder="Sets"
+                              type="number"
+                              styles={inputStyles + " w-16"}
+                              onChange={(newSets) =>
+                                handleExerciseSetsChange(
+                                  exerciseIndex,
+                                  workoutIndex,
+                                  newSets
+                                )
+                              }
+                              value={
+                                inputSets[`${workoutIndex}-${exerciseIndex}`] ??
+                                exercise.sets.toString()
+                              }
+                            />
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
                           <button
                             onClick={() =>
                               swapExercises(
@@ -662,9 +1006,9 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                               exerciseIndex === 0
                                 ? "opacity-50 cursor-not-allowed"
                                 : ""
-                            } p-1 font-bold text-xl border rounded-full bg-white`}
+                            } p-1 text-xl`}
                           >
-                            &nbsp;↑&nbsp;
+                            ↑
                           </button>
                           <button
                             onClick={() =>
@@ -685,68 +1029,15 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                               workout.workoutExercises.length - 1
                                 ? "opacity-50 cursor-not-allowed"
                                 : ""
-                            } p-1 font-bold text-xl border rounded-full bg-white`}
+                            } p-1 text-xl`}
                           >
-                            &nbsp;↓&nbsp;
+                            ↓
                           </button>
-                          <label className="font-bold text-lg">Exercise</label>
-                        </td>
-                        <td className="p-3">
-                          <Select
-                            options={groupedExerciseOptions}
-                            value={groupedExerciseOptions
-                              .find((group) =>
-                                group.options.find(
-                                  (option) =>
-                                    option.value.exerciseId ===
-                                    exercise.exerciseId
-                                )
-                              )
-                              ?.options.find(
-                                (option) =>
-                                  option.value.exerciseId ===
-                                  exercise.exerciseId
-                              )}
-                            styles={customBasicStyles}
-                            onChange={(newValue) => {
-                              if (newValue) {
-                                handleExerciseChange(
-                                  exerciseIndex,
-                                  workoutIndex,
-                                  newValue.value
-                                );
-                              }
-                            }}
-                            filterOption={customFilterOption}
-                          ></Select>
-                        </td>
-                        <td className="p-3 pl-5 pr-0">
-                          <label className="font-bold text-lg">Sets</label>
-                        </td>
-                        <td className="p-3">
-                          <Input
-                            placeholder="Sets"
-                            type="number"
-                            styles={inputStyles + " w-16"}
-                            onChange={(newSets) =>
-                              handleExerciseSetsChange(
-                                exerciseIndex,
-                                workoutIndex,
-                                newSets
-                              )
-                            }
-                            value={
-                              inputSets[`${workoutIndex}-${exerciseIndex}`] ??
-                              exercise.sets.toString()
-                            }
-                          />
-                        </td>
-                        <td className="p-3">
                           <img
-                            className="hover:cursor-pointer min-w-6"
+                            className="hover:cursor-pointer"
                             src={trashIcon.src}
-                            width={24}
-                            height={24}
+                            width={20}
+                            height={20}
                             alt="delete"
                             onClick={() =>
                               removeExerciseFromWorkout(
@@ -755,56 +1046,45 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                                 exercise
                               )
                             }
-                          ></img>
-                        </td>
-                      </tr>
-                    </React.Fragment>
-                  ))}
+                          />
+                        </div>
+                      </div>
+                    ))}
 
-                <tr>
-                  <td className="pl-5 pb-4 pt-4" colSpan={1}>
-                    <Button
-                      label="Add Exercise"
-                      handleClick={() => addExerciseToWorkout(workout)}
-                      customStyles="p-0 pt-1 pb-1 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-50"
-                    ></Button>
-                  </td>
-                </tr>
-              </React.Fragment>
+                  {/* Add Exercise Button */}
+                  <Button
+                    label="Add Exercise"
+                    handleClick={() => addExerciseToWorkout(workout)}
+                    customStyles="mt-4 text-slate-500 bg-slate-100 hover:bg-slate-200"
+                  />
+                </div>
+              </div>
             ))}
 
-          <tr>
-            <td className="pt-3 pl-5 " colSpan={4}>
-              {errorMessage.length > 0 && (
-                <>
-                  <ErrorCard message={errorMessage}></ErrorCard>
-                  <br></br>
-                </>
-              )}
+          {/* Add Workout Button */}
+          <Button
+            label="Add Workout"
+            handleClick={() => addWorkout()}
+            customStyles="mt-4 text-white bg-orange-500 hover:bg-orange-400"
+          />
+        </div>
+      </div>
 
-              <Button
-                label="Add Workout"
-                handleClick={() => addWorkout()}
-                customStyles="p-0 pt-1 pb-1 rounded-lg text-white"
-              ></Button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div className="pt-5">
+      {/* Submit Section */}
+      <div className="pt-5 text-center">
         {routine ? (
           <Button
             label="Update"
             handleClick={submitUpdate}
             isDisabled={isUpdateButtonDisabled}
             customStyles="text-white disabled:bg-orange-200 disabled:cursor-not-allowed"
-          ></Button>
+          />
         ) : (
           <Button
             label="Create"
             handleClick={submitCreation}
-            customStyles="text-white"
-          ></Button>
+            customStyles="text-white bg-green-500 hover:bg-green-400"
+          />
         )}
       </div>
     </>

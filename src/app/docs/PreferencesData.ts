@@ -53,7 +53,7 @@ interface BasicOptionType {
 export const customBasicStyles: StylesConfig<any, false> = {
   control: (provided, state) => ({
     ...provided,
-    // width: "200px",
+    width: "200px",
     borderRadius: "0.5rem",
     borderWidth: "2px",
     boxShadow: state.isFocused ? "" : provided.boxShadow,
@@ -84,7 +84,7 @@ export const customBasicStyles: StylesConfig<any, false> = {
 
   menu: (provided) => ({
     ...provided,
-    width: "300px", // Adjust this value to your desired width
+    width: "200px", // Adjust this value to your desired width
     border: "1px solid #f8fafc", // Optional: border color
     boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", // Optional: shadow effect
     borderRadius: "4px", // Optional: rounded corners
@@ -92,7 +92,7 @@ export const customBasicStyles: StylesConfig<any, false> = {
   // Optional: Adjust width for the menuList as well if needed
   menuList: (provided) => ({
     ...provided,
-    width: "300px", // Same width as menu for consistency
+    width: "200px", // Same width as menu for consistency
   }),
 };
 

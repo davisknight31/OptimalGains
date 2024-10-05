@@ -92,3 +92,34 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const deletedRoutine = await prisma.routines.delete({
+      where: {
+        routineId: body.routineId,
+      },
+    });
+
+    return NextResponse.json({
+      message: "Routine deleted successfully",
+      routine: deletedRoutine,
+    });
+  } catch (error: any) {
+    console.error("Error deleting routine:", error);
+
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      return NextResponse.json(
+        { error: "Database connection failed" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "An unknown error occurred" },
+      { status: 500 }
+    );
+  }
+}

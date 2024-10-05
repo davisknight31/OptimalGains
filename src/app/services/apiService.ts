@@ -112,35 +112,41 @@ export async function getRoutines(userId: number) {
 
   const responseData = await response.json();
 
-  // responseData.routines.forEach((routine) => {
-
-  // })
-
   const routinesData: Routine[] = responseData.routines || [];
 
-  if (routinesData.length > 0) {
-    routinesData.forEach((routine) => {
-      getWorkouts(routine.routineId).then(async (response) => {
-        const workoutResponseData = await response.json();
-        routine.workouts = workoutResponseData.workouts;
-        routine.workouts.forEach((workout) => {
-          if (workout.workoutId) {
-            getWorkoutExercises(workout.workoutId).then(async (response) => {
-              const workoutExerciseResponseData = await response.json();
-              workout.workoutExercises =
-                workoutExerciseResponseData.workoutExercises;
-            });
-          }
-        });
-      });
+  const routineWorkoutsPromises = routinesData.map(async (routine) => {
+    const routineWorkout = await getWorkouts(routine.routineId);
+    const routineWorkoutResponse = await routineWorkout.json();
+    routine.workouts = routineWorkoutResponse.workouts;
+    const workoutExercisesPromises = routine.workouts.map(async (workout) => {
+      if (workout.workoutId) {
+        const workoutExercises = await getWorkoutExercises(workout.workoutId);
+        const workoutExercisesResponse = await workoutExercises.json();
+        workout.workoutExercises = workoutExercisesResponse.workoutExercises;
+      }
     });
-  }
+    await Promise.all(workoutExercisesPromises);
+  });
+  await Promise.all(routineWorkoutsPromises);
 
-  // if (routinesData) {
-  //   return routinesData;
-  // } else {
-  //   return [];
+  // if (routinesData.length > 0) {
+  //   routinesData.forEach((routine) => {
+  //     getWorkouts(routine.routineId).then(async (response) => {
+  //       const workoutResponseData = await response.json();
+  //       routine.workouts = workoutResponseData.workouts;
+  //       routine.workouts.forEach((workout) => {
+  //         if (workout.workoutId) {
+  //           getWorkoutExercises(workout.workoutId).then(async (response) => {
+  //             const workoutExerciseResponseData = await response.json();
+  //             workout.workoutExercises =
+  //               workoutExerciseResponseData.workoutExercises;
+  //           });
+  //         }
+  //       });
+  //     });
+  //   });
   // }
+
   return routinesData;
 }
 
@@ -352,4 +358,14 @@ export async function deleteWorkoutExercises(workoutExerciseIds: number[]) {
   });
 
   await Promise.all(deletedWorkoutPromises);
+}
+
+export async function deleteRoutine(routineId: number) {
+  const routinesUrl = "/api/routines";
+
+  const routineData = {
+    routineId: routineId,
+  };
+
+  await makeDeleteRequest(routinesUrl, routineData);
 }

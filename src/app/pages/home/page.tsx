@@ -43,6 +43,14 @@ const HomePage: React.FC = () => {
     }
   }, [user, exercises]);
 
+  async function refreshRoutines() {
+    if (user) {
+      await getRoutines(user.userId).then((fetchedRoutines) => {
+        setUser({ ...user, routines: fetchedRoutines });
+      });
+    }
+  }
+
   return (
     <main>
       <Navbar></Navbar>
@@ -60,7 +68,11 @@ const HomePage: React.FC = () => {
             ></ActivePeriod>
           </Card>
           <Card>
-            <RoutineList routines={user?.routines || []} loading={isFetching} />
+            <RoutineList
+              routines={user?.routines || []}
+              loading={isFetching}
+              refreshRoutines={refreshRoutines}
+            />
           </Card>
         </div>
       </PageContainer>

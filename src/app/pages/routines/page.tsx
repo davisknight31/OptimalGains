@@ -6,16 +6,23 @@ import PageContainer from "@/app/components/shared-components/PageContainer";
 import { useUser } from "@/app/contexts/UserContext";
 import { navigateLogin } from "@/app/utils/navigationActions";
 import { useEffect } from "react";
+import { getRoutines } from "@/app/services/apiService";
 
 const RoutinesPage: React.FC = () => {
-  const { isLoggedIn, user } = useUser();
+  const { isLoggedIn, user, setUser } = useUser();
 
   useEffect(() => {
     if (!isLoggedIn) {
       navigateLogin();
     }
   });
-
+  async function refreshRoutines() {
+    if (user) {
+      await getRoutines(user.userId).then((fetchedRoutines) => {
+        setUser({ ...user, routines: fetchedRoutines });
+      });
+    }
+  }
   return (
     <>
       <main>
@@ -23,7 +30,10 @@ const RoutinesPage: React.FC = () => {
         <PageContainer>
           <div className="flex flex-col gap-7">
             <Card>
-              <RoutlineList routines={user?.routines || []} />
+              <RoutlineList
+                routines={user?.routines || []}
+                refreshRoutines={refreshRoutines}
+              />
             </Card>
           </div>
         </PageContainer>
