@@ -7,7 +7,7 @@ import { useUser } from "@/app/contexts/UserContext";
 import Spinner from "./Spinner";
 import trashIcon from "../../assets/trashIcon_Black.png";
 import Modal from "./Modal";
-import Button from "../shared-components/Button";
+// import Button from "../shared-components/Button";
 import {
   deleteRoutine,
   deleteWorkoutExercises,
@@ -90,7 +90,7 @@ const RoutlineList: React.FC<RoutineListProps> = ({
                         handleClick={() =>
                           handleEditNavigation(routine.routineId)
                         }
-                        customStyles="p-0 pt-1 pb-1 rounded-md"
+                        customStyles="p-0 pt-1 pb-1 rounded-md text-white"
                       ></ButtonComponent>
                     </td>
                     <td>
@@ -117,7 +117,7 @@ const RoutlineList: React.FC<RoutineListProps> = ({
             <ButtonComponent
               label="Create New Routine"
               handleClick={navigateEditRoutines}
-              customStyles=""
+              customStyles="text-white p-3"
             ></ButtonComponent>
           </div>
         </>
@@ -131,16 +131,16 @@ const RoutlineList: React.FC<RoutineListProps> = ({
           ?
         </p>
         <div className="w-full flex gap-5">
-          <Button
+          <ButtonComponent
             label="Deny"
             handleClick={() => setShowDeleteModal(false)}
-            customStyles="text-white"
-          ></Button>
-          <Button
+            customStyles="text-white p-3 bg-red-500 hover:bg-red-400"
+          ></ButtonComponent>
+          <ButtonComponent
             label="Confirm"
             handleClick={() => removeRoutine(routineToDelete)}
-            customStyles="text-white"
-          ></Button>
+            customStyles="text-white p-3 bg-emerald-500 hover:bg-emerald-400"
+          ></ButtonComponent>
         </div>
       </Modal>
     </>

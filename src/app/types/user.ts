@@ -9,7 +9,7 @@ export interface User {
   email: string;
   createdAt: Date;
   routines: Routine[] | null;
-  periods: Period[] | null;
+  periods: Period[] | [];
 }
 
 export interface loginUser {

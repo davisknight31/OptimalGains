@@ -1,6 +1,7 @@
 import React from "react";
 import Button from "../shared-components/Button";
 import { testLog } from "@/app/utils/helpers";
+import { navigatePeriods } from "@/app/utils/navigationActions";
 
 interface ActivePeriodProps {
   routineName: string;
@@ -34,8 +35,17 @@ const ActivePeriod: React.FC<ActivePeriodProps> = ({
             Next Workout:&nbsp;
             <span className="text-black">{nextWorkoutName}</span>
           </div>
-          <div>
-            <Button handleClick={testLog} label="Start Next Workout"></Button>
+          <div className="flex gap-5">
+            <Button
+              handleClick={navigatePeriods}
+              label="View Periods"
+              customStyles="text-white p-3"
+            ></Button>
+            <Button
+              handleClick={testLog}
+              label="Start Next Workout"
+              customStyles="text-white p-3"
+            ></Button>
           </div>
         </div>
       </div>

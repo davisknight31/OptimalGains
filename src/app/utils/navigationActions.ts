@@ -18,6 +18,13 @@ export async function navigateEditRoutines(routineId?: number) {
   redirect(`/pages/edit-routine${routineId ? `?routineId=${routineId}` : ""}`);
 }
 
+export async function navigateEditPeriods(periodId?: number) {
+  redirect(`/pages/edit-period${periodId ? `?periodId=${periodId}` : ""}`);
+}
+export async function navigatePeriods() {
+  redirect("/pages/periods");
+}
+
 // export async function navigateHome(data: FormData) {
 //   redirect(`/posts/${data.get('id')}`)
 // }

@@ -1,4 +1,5 @@
 import { Exercise } from "../types/exercise";
+import { Period } from "../types/period";
 import { Routine } from "../types/routine";
 import { Workout } from "../types/workout";
 
@@ -176,14 +177,20 @@ export async function getWorkoutExercises(workoutId: number) {
 }
 
 export async function getPeriods(userId: number) {
-  const response = await fetch(`/api/users?userId=${userId}`, {
+  const response = await fetch(`/api/periods?userId=${userId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
   });
 
-  return response;
+  const responseData = await response.json();
+
+  const periods: Period[] = responseData.periods;
+
+  console.log(typeof periods[0].dateStarted);
+
+  return periods;
 }
 
 export async function getAllExercises() {
@@ -369,3 +376,13 @@ export async function deleteRoutine(routineId: number) {
 
   await makeDeleteRequest(routinesUrl, routineData);
 }
+
+// export async function getPeriods(routineId: number) {
+//   const routinesUrl = "/api/periods";
+
+//   const routineData = {
+//     routineId: routineId,
+//   };
+
+//   await makeDeleteRequest(routinesUrl, routineData);
+// }

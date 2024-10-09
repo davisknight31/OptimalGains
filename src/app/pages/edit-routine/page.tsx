@@ -25,7 +25,6 @@ const EditRoutinePage: React.FC = () => {
   });
 
   useEffect(() => {
-    console.log("routine id: ", routineId);
     //if a routine was passed, either through edit click or url editing
     if (routineId) {
       const parsedRoutineId = parseInt(routineId);
@@ -43,12 +42,6 @@ const EditRoutinePage: React.FC = () => {
         setRoutineToEdit(retrievedRoutine);
       }
     }
-    //find the routine by the params routineId
-    //first check if an id was even passed, if none was passed you know to create new
-    //if an id was passed, edit that routine
-    //first find the routine by the id
-    //if found, edit as normal
-    //if not, redirect back to the routines page since that means the user probably passed the id themselves in the url
   }, [routineId]);
 
   function refreshRoutines(): void {

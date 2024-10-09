@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  //create a routine
   try {
     const body = await request.json();
 

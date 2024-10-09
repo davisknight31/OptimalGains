@@ -877,11 +877,11 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
             .map((workout, workoutIndex) => (
               <div key={workout.workoutId || `${workout.uniqueKey}`}>
                 {/* Workout Card */}
-                <div className="bg-slate-50 p-4 rounded-lg mb-4">
+                <div className="bg-slate-100 p-4 rounded-lg mb-7">
                   <div className="flex justify-between items-center">
                     <h3 className="font-bold text-lg">{workout.workoutName}</h3>
                     <div className="flex gap-2">
-                      <button
+                      {/* <button
                         onClick={() =>
                           swapWorkouts(
                             workoutIndex,
@@ -916,12 +916,11 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                         } p-1 text-xl`}
                       >
                         ↓
-                      </button>
+                      </button> */}
                       <img
                         className="hover:cursor-pointer"
                         src={trashIcon.src}
-                        width={24}
-                        height={24}
+                        width="32px"
                         alt="delete"
                         onClick={() => removeWorkout(workout)}
                       />
@@ -937,7 +936,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                           exercise.workoutExerciseId ||
                           `${workout.uniqueKey}-${exercise.uniqueKey}`
                         }
-                        className="mt- p-2 rounded-lg  flex justify-between items-center"
+                        className="p-2 rounded-lg flex justify-between items-center"
                       >
                         <div className="flex items-center gap-5">
                           <span className="font-bold">
@@ -991,7 +990,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                           </span>
                         </div>
                         <div className="flex gap-2">
-                          <button
+                          {/* <button
                             onClick={() =>
                               swapExercises(
                                 workoutIndex,
@@ -1006,7 +1005,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                               exerciseIndex === 0
                                 ? "opacity-50 cursor-not-allowed"
                                 : ""
-                            } p-1 text-xl`}
+                            } p-1 text-xl bg-white`}
                           >
                             ↑
                           </button>
@@ -1032,21 +1031,49 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                             } p-1 text-xl`}
                           >
                             ↓
-                          </button>
-                          <img
-                            className="hover:cursor-pointer"
-                            src={trashIcon.src}
-                            width={20}
-                            height={20}
-                            alt="delete"
-                            onClick={() =>
+                          </button> */}
+                          <Button
+                            label="↑"
+                            customStyles="p-2 text-md mt-4 text-white rounded-md"
+                            handleClick={() =>
+                              swapExercises(
+                                workoutIndex,
+                                exerciseIndex,
+                                exerciseIndex - 1,
+                                exercise.positionInWorkout,
+                                exercise.positionInWorkout - 1
+                              )
+                            }
+                            isDisabled={exerciseIndex === 0}
+                          ></Button>
+                          <Button
+                            label="↓"
+                            customStyles="p-2 text-md mt-4 text-white rounded-md"
+                            handleClick={() =>
+                              swapExercises(
+                                workoutIndex,
+                                exerciseIndex,
+                                exerciseIndex + 1,
+                                exercise.positionInWorkout,
+                                exercise.positionInWorkout + 1
+                              )
+                            }
+                            isDisabled={
+                              exerciseIndex ===
+                              workout.workoutExercises.length - 1
+                            }
+                          ></Button>
+                          <Button
+                            label="Remove"
+                            customStyles="p-2 text-sm mt-4 text-white rounded-md"
+                            handleClick={() =>
                               removeExerciseFromWorkout(
                                 workoutIndex,
                                 exerciseIndex,
                                 exercise
                               )
                             }
-                          />
+                          ></Button>
                         </div>
                       </div>
                     ))}
@@ -1055,7 +1082,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                   <Button
                     label="Add Exercise"
                     handleClick={() => addExerciseToWorkout(workout)}
-                    customStyles="mt-4 text-slate-500 bg-slate-100 hover:bg-slate-200"
+                    customStyles="p-2 mt-4 text-slate-700 bg-slate-300 hover:bg-slate-200 hover:text-slate-600"
                   />
                 </div>
               </div>
@@ -1065,7 +1092,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
           <Button
             label="Add Workout"
             handleClick={() => addWorkout()}
-            customStyles="mt-4 text-white bg-orange-500 hover:bg-orange-400"
+            customStyles="p-3 mt-4 text-white bg-orange-500 hover:bg-orange-400"
           />
         </div>
       </div>
@@ -1077,13 +1104,13 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
             label="Update"
             handleClick={submitUpdate}
             isDisabled={isUpdateButtonDisabled}
-            customStyles="text-white disabled:bg-orange-200 disabled:cursor-not-allowed"
+            customStyles="p-3 text-white disabled:bg-orange-200 disabled:cursor-not-allowed"
           />
         ) : (
           <Button
             label="Create"
             handleClick={submitCreation}
-            customStyles="text-white bg-green-500 hover:bg-green-400"
+            customStyles="p-3 text-white bg-green-500 hover:bg-green-400"
           />
         )}
       </div>

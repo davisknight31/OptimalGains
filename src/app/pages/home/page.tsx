@@ -9,8 +9,13 @@ import { Routine } from "@/app/types/routine";
 import Navbar from "@/app/components/shared-components/Navbar";
 import { useUser } from "@/app/contexts/UserContext";
 import { navigateLogin } from "@/app/utils/navigationActions";
-import { getAllExercises, getRoutines } from "@/app/services/apiService";
+import {
+  getAllExercises,
+  getPeriods,
+  getRoutines,
+} from "@/app/services/apiService";
 import { Exercise } from "@/app/types/exercise";
+import { User } from "@/app/types/user";
 
 const HomePage: React.FC = () => {
   const { isLoggedIn, user, setUser, exercises, setExercises } = useUser();
@@ -25,21 +30,27 @@ const HomePage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (user && !user.routines) {
-      getRoutines(user.userId).then((fetchedRoutines) => {
-        setUser({ ...user, routines: fetchedRoutines });
-        console.log(fetchedRoutines);
+    if (user && !user.routines && !user.periods) {
+      const promises = [getRoutines(user.userId), getPeriods(user.userId)];
+      Promise.all(promises).then(([routines, periods]) => {
+        setUser({
+          ...user,
+          routines: routines,
+          periods: periods,
+        } as User); // as User is needed because in UserContext, the user is initially undefined
+      });
+
+      getAllExercises().then((fetchedExercises) => {
+        setExercises(fetchedExercises);
       });
     }
-    getAllExercises().then((fetchedExercises) => {
-      console.log(fetchedExercises);
-      setExercises(fetchedExercises);
-    });
   }, []);
 
   useEffect(() => {
     if (user?.routines && exercises) {
+      console.log(user.periods);
       setIsFetching(false);
+      console.log(user);
     }
   }, [user, exercises]);
 
