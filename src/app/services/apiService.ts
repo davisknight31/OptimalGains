@@ -1,5 +1,6 @@
 import { Exercise } from "../types/exercise";
 import { Period } from "../types/period";
+import { PeriodWorkout } from "../types/periodWorkout";
 import { Routine } from "../types/routine";
 import { Workout } from "../types/workout";
 
@@ -190,7 +191,70 @@ export async function getPeriods(userId: number) {
 
   console.log(typeof periods[0].dateStarted);
 
+  const periodWorkoutsPromises = periods.map(async (period) => {
+    const periodWorkoutsResponse = await getPeriodWorkouts(period.periodId);
+    const periodWorkouts = await periodWorkoutsResponse.json();
+    period.periodWorkouts = periodWorkouts.periodWorkouts;
+    const periodWorkoutExercisesPromises = period.periodWorkouts.map(
+      async (periodWorkout) => {
+        const periodExercisesResponse = await getPeriodExercises(
+          periodWorkout.periodWorkoutId
+        );
+        const periodExercises = await periodExercisesResponse.json();
+        periodWorkout.periodExercises = periodExercises.periodExercises;
+        const periodSetsPromises = periodWorkout.periodExercises.map(
+          async (periodExercise) => {
+            const periodSetsResponse = await getPeriodSets(
+              periodExercise.periodExerciseId
+            );
+            const periodSets = await periodSetsResponse.json();
+            periodExercise.periodSets = periodSets.periodSets;
+          }
+        );
+        await Promise.all(periodSetsPromises);
+      }
+    );
+    await Promise.all(periodWorkoutExercisesPromises);
+  });
+  await Promise.all(periodWorkoutsPromises);
+
   return periods;
+}
+
+export async function getPeriodWorkouts(periodId: number) {
+  const response = await fetch(`/api/period-workouts?periodId=${periodId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response;
+}
+
+export async function getPeriodExercises(periodWorkoutId: number) {
+  const response = await fetch(
+    `/api/period-exercises?periodWorkoutId=${periodWorkoutId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return response;
+}
+
+export async function getPeriodSets(periodExerciseId: number) {
+  const response = await fetch(
+    `/api/period-sets?periodExerciseId=${periodExerciseId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return response;
 }
 
 export async function getAllExercises() {

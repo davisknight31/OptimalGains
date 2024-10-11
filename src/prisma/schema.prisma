@@ -53,6 +53,7 @@ model Periods {
   routineId      Int
   periodName     String
   dateStarted    DateTime @default(now())
+  dateStopped    DateTime
   lengthInWeeks  Int
   active         Boolean @default(true)
   completed      Boolean @default(false)
@@ -79,6 +80,7 @@ model WorkoutExercises {
   positionInWorkout     Int     
   workout              Workouts    @relation(fields: [workoutId], references: [workoutId])
   exercise             Exercises    @relation(fields: [exerciseId], references: [exerciseId])
+  periodExercises PeriodExercises[]
 }
 
 model PeriodWorkouts {
@@ -96,9 +98,18 @@ model PeriodWorkouts {
 model PeriodExercises {
   periodExerciseId     Int     @id @default(autoincrement())
   periodWorkoutId      Int
-  setNumber            Int
-  targetReps           Decimal
-  actualReps           Decimal
-  weight               Decimal
+  workoutExerciseId    Int
   periodWorkout       PeriodWorkouts    @relation(fields: [periodWorkoutId], references: [periodWorkoutId])
+  workoutExercise     WorkoutExercises  @relation(fields: [workoutExerciseId], references: [workoutExerciseId])
+  periodSets          PeriodSets[]
+}
+
+model PeriodSets {
+  periodSetId          Int     @id @default(autoincrement())
+  periodExerciseId     Int
+  setNumber            Int
+  targetReps           Float
+  actualReps           Float
+  weight               Float
+  periodExercise      PeriodExercises    @relation(fields: [periodExerciseId], references: [periodExerciseId])
 }

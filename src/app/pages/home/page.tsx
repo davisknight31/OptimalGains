@@ -16,11 +16,13 @@ import {
 } from "@/app/services/apiService";
 import { Exercise } from "@/app/types/exercise";
 import { User } from "@/app/types/user";
+import { Period } from "@/app/types/period";
 
 const HomePage: React.FC = () => {
   const { isLoggedIn, user, setUser, exercises, setExercises } = useUser();
   const [isFetching, setIsFetching] = useState(true);
   const [userRoutines, setUserRoutines] = useState<Routine[]>([]);
+  const [activePeriod, setActivePeriod] = useState<Period>();
   // const [exercises, setExercises] = useState<Exercise[]>([]);
 
   useEffect(() => {
@@ -47,7 +49,11 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (user?.routines && exercises) {
+    if (user?.periods) {
+      setActivePeriod(user.periods.find((period) => period.active));
+    }
+    if (user?.routines && user.periods && exercises && activePeriod) {
+      //could alter this so that there are separate isFetching bools for periods and routines
       console.log(user.periods);
       setIsFetching(false);
       console.log(user);
@@ -72,10 +78,11 @@ const HomePage: React.FC = () => {
           </Card>
           <Card>
             <ActivePeriod
-              routineName="MyRoutine"
-              currentWeek={6}
-              totalWeeks={8}
-              nextWorkoutName="Chest and triceps"
+              period={activePeriod}
+              associatedRoutine={user?.routines?.find(
+                (routine) => routine.routineId === activePeriod?.routineId
+              )}
+              loading={isFetching}
             ></ActivePeriod>
           </Card>
           <Card>

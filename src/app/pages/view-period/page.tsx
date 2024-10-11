@@ -10,8 +10,7 @@ import { getRoutines } from "@/app/services/apiService";
 import PeriodList from "@/app/components/periods-components/PeriodList";
 import { useSearchParams } from "next/navigation";
 import { Period } from "@/app/types/period";
-import EditPeriod from "@/app/components/edit-period-component/EditPeriod";
-
+import PeriodOverview from "@/app/components/view-period-components/PeriodOverview";
 const PeriodsPage: React.FC = () => {
   const { isLoggedIn, user, setUser } = useUser();
   const [periodToEdit, setPeriodToEdit] = useState<Period | undefined>();
@@ -50,7 +49,7 @@ const PeriodsPage: React.FC = () => {
         <PageContainer>
           <div className="flex flex-col gap-7">
             <Card>
-              <EditPeriod period={periodToEdit}></EditPeriod>
+              <PeriodOverview period={periodToEdit}></PeriodOverview>
             </Card>
           </div>
         </PageContainer>

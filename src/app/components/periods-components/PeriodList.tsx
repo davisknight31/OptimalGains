@@ -3,19 +3,17 @@ import React, { useEffect, useState } from "react";
 import { Period } from "@/app/types/period";
 import ButtonComponent from "../shared-components/Button";
 import trashIcon from "../../assets/trashIcon_Black.png";
-import { navigateEditPeriods } from "@/app/utils/navigationActions";
+import { navigateViewPeriods } from "@/app/utils/navigationActions";
 
 interface PeriodListProps {
   periods: Period[];
 }
 
 const PeriodList: React.FC<PeriodListProps> = ({ periods }) => {
-  useEffect(() => {
-    console.log(periods);
-  });
+  useEffect(() => {});
 
   function handleViewNavigation(periodId: number) {
-    navigateEditPeriods(periodId);
+    navigateViewPeriods(periodId);
   }
 
   return (
@@ -25,34 +23,40 @@ const PeriodList: React.FC<PeriodListProps> = ({ periods }) => {
       {periods.length > 0 ? (
         <table className="w-full">
           <tbody className="[&>*:nth-child(even)]:bg-slate-50">
-            {periods.map((period) => (
-              <tr key={period.periodId}>
-                <td className="font-bold text-xl p-3 pt-5 pb-5 w-fit">
-                  {period.periodName}
-                </td>
-                <td className="p-3 pt-5 pb-5">
-                  {period.active ? (
-                    <span className="bg-green-300 rounded-lg p-3 text-green-700 font-bold">
-                      Active
-                    </span>
-                  ) : period.completed ? (
-                    <span className="bg-blue-300 rounded-lg p-3 text-blue-700 font-bold">
-                      Completed
-                    </span>
-                  ) : (
-                    <span className="bg-red-300 rounded-lg p-3 text-red-700 font-bold text-nowrap">
-                      Not Completed
-                    </span>
-                  )}
-                </td>
-                <td className="p-3 pt-5 pb-5 w-full text-right">
-                  <ButtonComponent
-                    label="View"
-                    handleClick={() => handleViewNavigation(period.periodId)}
-                    customStyles="p-0 pt-1 pb-1 rounded-md text-white  w-2/4"
-                  ></ButtonComponent>
-                </td>
-                {/* <td>
+            {periods
+              .sort(
+                (a, b) =>
+                  new Date(b.dateStarted).getTime() -
+                  new Date(a.dateStarted).getTime()
+              )
+              .map((period) => (
+                <tr key={period.periodId}>
+                  <td className="font-bold text-xl p-3 pt-5 pb-5 w-fit">
+                    {period.periodName}
+                  </td>
+                  <td className="p-3 pt-5 pb-5">
+                    {period.active ? (
+                      <span className="bg-green-300 rounded-lg p-3 text-green-700 font-bold">
+                        Active
+                      </span>
+                    ) : period.completed ? (
+                      <span className="bg-blue-300 rounded-lg p-3 text-blue-700 font-bold">
+                        Completed
+                      </span>
+                    ) : (
+                      <span className="bg-red-300 rounded-lg p-3 text-red-700 font-bold text-nowrap">
+                        Not Completed
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-3 pt-5 pb-5 w-2/4 text-right">
+                    <ButtonComponent
+                      label="View"
+                      handleClick={() => handleViewNavigation(period.periodId)}
+                      customStyles="p-0 pt-1 pb-1 rounded-md text-white"
+                    ></ButtonComponent>
+                  </td>
+                  {/* <td>
                   <img
                     className="hover:cursor-pointer min-w-6"
                     src={trashIcon.src}
@@ -65,8 +69,19 @@ const PeriodList: React.FC<PeriodListProps> = ({ periods }) => {
                     }}
                   ></img>
                 </td> */}
-              </tr>
-            ))}
+                </tr>
+              ))}
+            <tr>
+              <td colSpan={3}>
+                <ButtonComponent
+                  label="Start a new period"
+                  handleClick={() => {
+                    console.log("test");
+                  }}
+                  customStyles="p-3 text-white"
+                ></ButtonComponent>
+              </td>
+            </tr>
           </tbody>
         </table>
       ) : (

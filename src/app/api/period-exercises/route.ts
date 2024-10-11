@@ -6,42 +6,40 @@ export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const queryParams = url.searchParams;
-    const requestPeriodId = queryParams.get("periodId");
-    if (requestPeriodId) {
-      const periodWorkouts = await prisma.periodWorkouts.findMany({
+    const requestPeriodWorkoutId = queryParams.get("periodWorkoutId");
+    if (requestPeriodWorkoutId) {
+      const periodWorkoutExercises = await prisma.periodExercises.findMany({
         where: {
-          periodId: parseInt(requestPeriodId),
+          periodWorkoutId: parseInt(requestPeriodWorkoutId),
         },
       });
 
       return NextResponse.json({
-        periodWorkouts: periodWorkouts,
+        periodExercises: periodWorkoutExercises,
       });
     }
   } catch (error) {
-    console.error("Error retrieving period workouts:", error);
+    console.error("Error retrieving period exercises:", error);
   }
 }
 
 export async function POST(request: NextRequest) {
-  //create a routine
   try {
     const body = await request.json();
 
-    const newPeriodWorkout = await prisma.periodWorkouts.create({
+    const newPeriodExercise = await prisma.periodExercises.create({
       data: {
-        periodId: body.periodId,
-        workoutId: body.workoutId,
-        periodWorkoutName: body.periodWorkoutName,
+        periodWorkoutId: body.periodWorkoutId,
+        workoutExerciseId: body.workoutExerciseId,
       },
     });
 
     return NextResponse.json({
-      message: "Period workout created successfully",
-      period: newPeriodWorkout,
+      message: "Period exercise created successfully",
+      periodExercise: newPeriodExercise,
     });
   } catch (error: any) {
-    console.error("Error creating period workout:", error);
+    console.error("Error creating period exercise:", error);
 
     if (error instanceof Prisma.PrismaClientInitializationError) {
       return NextResponse.json(
