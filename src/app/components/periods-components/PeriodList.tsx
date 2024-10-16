@@ -3,17 +3,32 @@ import React, { useEffect, useState } from "react";
 import { Period } from "@/app/types/period";
 import ButtonComponent from "../shared-components/Button";
 import trashIcon from "../../assets/trashIcon_Black.png";
-import { navigateViewPeriods } from "@/app/utils/navigationActions";
+import {
+  navigateNewPeriod,
+  navigateViewPeriods,
+} from "@/app/utils/navigationActions";
+import SuccessModal from "../shared-components/SuccessModal";
+import Modal from "../shared-components/Modal";
 
 interface PeriodListProps {
   periods: Period[];
 }
 
 const PeriodList: React.FC<PeriodListProps> = ({ periods }) => {
+  const [showModal, setShowModal] = useState<boolean>(false);
+
   useEffect(() => {});
 
   function handleViewNavigation(periodId: number) {
     navigateViewPeriods(periodId);
+  }
+
+  function showConfirmationModal() {
+    if (periods.find((period) => period.active === true)) {
+      setShowModal(!showModal);
+    } else {
+      navigateNewPeriod();
+    }
   }
 
   return (
@@ -53,7 +68,7 @@ const PeriodList: React.FC<PeriodListProps> = ({ periods }) => {
                     <ButtonComponent
                       label="View"
                       handleClick={() => handleViewNavigation(period.periodId)}
-                      customStyles="p-0 pt-1 pb-1 rounded-md text-white"
+                      customStyles="p-0 pt-1 pb-1 rounded-md text-white bg-orange-500 hover:bg-orange-400"
                     ></ButtonComponent>
                   </td>
                   {/* <td>
@@ -75,10 +90,8 @@ const PeriodList: React.FC<PeriodListProps> = ({ periods }) => {
               <td colSpan={3}>
                 <ButtonComponent
                   label="Start a new period"
-                  handleClick={() => {
-                    console.log("test");
-                  }}
-                  customStyles="p-3 text-white"
+                  handleClick={showConfirmationModal}
+                  customStyles="p-3 text-white bg-orange-500 hover:bg-orange-400"
                 ></ButtonComponent>
               </td>
             </tr>
@@ -94,6 +107,26 @@ const PeriodList: React.FC<PeriodListProps> = ({ periods }) => {
               customStyles="text-white p-3"
             ></ButtonComponent> */}
       </div>
+      <Modal showModal={showModal}>
+        <p className="font-bold text-2xl text-center pb-5">
+          Starting a new period will set your current period to inactive. This
+          cannot be undone.
+        </p>
+        <div className="w-full flex gap-5">
+          <ButtonComponent
+            label="Deny"
+            handleClick={() => setShowModal(!showModal)}
+            customStyles="text-white p-3 bg-red-500 hover:bg-red-400"
+          ></ButtonComponent>
+          <ButtonComponent
+            label="Confirm"
+            handleClick={() => {
+              navigateNewPeriod();
+            }}
+            customStyles="text-white p-3 bg-green-500 hover:bg-green-400"
+          ></ButtonComponent>
+        </div>
+      </Modal>
     </>
   );
 };

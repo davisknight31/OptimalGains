@@ -44,11 +44,10 @@ const EditRoutinePage: React.FC = () => {
     }
   }, [routineId]);
 
-  function refreshRoutines(): void {
+  async function refreshRoutines(): Promise<void> {
     if (user) {
-      getRoutines(user.userId).then((fetchedRoutines) => {
+      await getRoutines(user.userId).then((fetchedRoutines) => {
         setUser({ ...user, routines: fetchedRoutines });
-        console.log(fetchedRoutines);
       });
     }
   }

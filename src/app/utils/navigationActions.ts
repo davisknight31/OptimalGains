@@ -25,6 +25,10 @@ export async function navigatePeriods() {
   redirect("/pages/periods");
 }
 
+export async function navigateNewPeriod() {
+  redirect("/pages/new-period");
+}
+
 // export async function navigateHome(data: FormData) {
 //   redirect(`/posts/${data.get('id')}`)
 // }

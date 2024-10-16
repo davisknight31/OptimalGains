@@ -53,7 +53,7 @@ model Periods {
   routineId      Int
   periodName     String
   dateStarted    DateTime @default(now())
-  dateStopped    DateTime
+  dateStopped    DateTime @default(now())
   lengthInWeeks  Int
   active         Boolean @default(true)
   completed      Boolean @default(false)

@@ -49,16 +49,36 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (user?.periods) {
-      setActivePeriod(user.periods.find((period) => period.active));
+    console.log(user?.routines, user?.periods, exercises, activePeriod);
+    if (user?.periods && !activePeriod) {
+      const foundActivePeriod: Period = user.periods.find(
+        (period) => period.active
+      ) || {
+        periodId: 0,
+        userId: 0,
+        routineId: 0,
+        periodName: "No Active Period",
+        dateStarted: new Date(),
+        dateStopped: new Date(),
+        lengthInWeeks: 0,
+        active: false,
+        completed: false,
+        periodWorkouts: [],
+      };
+      console.log(foundActivePeriod);
+      if (foundActivePeriod) {
+        setActivePeriod(foundActivePeriod);
+      }
     }
     if (user?.routines && user.periods && exercises && activePeriod) {
       //could alter this so that there are separate isFetching bools for periods and routines
-      console.log(user.periods);
       setIsFetching(false);
-      console.log(user);
     }
-  }, [user, exercises]);
+  }, [user, exercises, activePeriod]);
+
+  useEffect(() => {
+    console.log(isFetching);
+  }, [isFetching]);
 
   async function refreshRoutines() {
     if (user) {

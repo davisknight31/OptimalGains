@@ -90,7 +90,7 @@ const RoutlineList: React.FC<RoutineListProps> = ({
                         handleClick={() =>
                           handleEditNavigation(routine.routineId)
                         }
-                        customStyles="p-0 pt-1 pb-1 rounded-md text-white"
+                        customStyles="p-0 pt-1 pb-1 rounded-md text-white bg-orange-500 hover:bg-orange-400"
                       ></ButtonComponent>
                     </td>
                     <td>
@@ -117,7 +117,7 @@ const RoutlineList: React.FC<RoutineListProps> = ({
             <ButtonComponent
               label="Create New Routine"
               handleClick={navigateEditRoutines}
-              customStyles="text-white p-3"
+              customStyles="text-white p-3 bg-orange-500 hover:bg-orange-400"
             ></ButtonComponent>
           </div>
         </>
@@ -139,7 +139,7 @@ const RoutlineList: React.FC<RoutineListProps> = ({
           <ButtonComponent
             label="Confirm"
             handleClick={() => removeRoutine(routineToDelete)}
-            customStyles="text-white p-3 bg-emerald-500 hover:bg-emerald-400"
+            customStyles="text-white p-3 bg-green-500 hover:bg-green-400"
           ></ButtonComponent>
         </div>
       </Modal>

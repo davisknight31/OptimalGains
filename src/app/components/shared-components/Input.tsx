@@ -7,6 +7,7 @@ interface InputProps {
   onChange: (value: string) => void;
   styles: string;
   value?: string;
+  disabled?: boolean;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -15,6 +16,7 @@ const Input: React.FC<InputProps> = ({
   onChange,
   styles,
   value,
+  disabled,
 }) => {
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onChange(event.target.value);
@@ -42,6 +44,7 @@ const Input: React.FC<InputProps> = ({
             }
           }
         }}
+        disabled={disabled}
       ></input>
     </>
   );

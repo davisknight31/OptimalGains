@@ -96,6 +96,9 @@ export const customBasicStyles: StylesConfig<any, false> = {
   }),
 };
 
+export const inputStyles: string =
+  "p-1 rounded-lg bg-white border-2 border-slate-200 placeholder-slate-400 focus:outline-0";
+
 // export const customLevelStyles: StylesConfig<LevelOptionType, false> = {
 //   control: (provided, state) => ({
 //     ...provided,

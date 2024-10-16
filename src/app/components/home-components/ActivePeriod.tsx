@@ -1,10 +1,10 @@
 import React from "react";
-import Button from "../shared-components/Button";
 import { testLog } from "@/app/utils/helpers";
 import { navigatePeriods } from "@/app/utils/navigationActions";
 import { Period } from "@/app/types/period";
 import Spinner from "../shared-components/Spinner";
 import { Routine } from "@/app/types/routine";
+import ButtonComponent from "../shared-components/Button";
 
 interface ActivePeriodProps {
   period: Period | undefined;
@@ -41,7 +41,9 @@ const ActivePeriod: React.FC<ActivePeriodProps> = ({
               <div className="text-gray-400 font-semibold text-lg">
                 Routine:&nbsp;
                 <span className="text-black">
-                  {associatedRoutine?.routineName}
+                  {period.periodId === 0
+                    ? "N/A"
+                    : associatedRoutine?.routineName}
                 </span>
               </div>
               {/* <div className="text-gray-400 font-semibold text-lg">
@@ -55,16 +57,17 @@ const ActivePeriod: React.FC<ActivePeriodProps> = ({
               <span className="text-black">{nextWorkoutName}</span>
             </div> */}
               <div className="flex gap-5">
-                <Button
+                <ButtonComponent
                   handleClick={navigatePeriods}
                   label="View Periods"
-                  customStyles="text-white p-3"
-                ></Button>
-                <Button
+                  customStyles="text-white p-3 bg-orange-500 hover:bg-orange-400"
+                ></ButtonComponent>
+                <ButtonComponent
                   handleClick={testLog}
                   label="Start Next Workout"
-                  customStyles="text-white p-3"
-                ></Button>
+                  customStyles="text-white p-3 bg-orange-500 hover:bg-orange-400 disabled:bg-orange-100"
+                  isDisabled={period.periodId === 0 ? true : false}
+                ></ButtonComponent>
               </div>
             </div>
           )}

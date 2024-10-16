@@ -7,11 +7,13 @@ import { navigateRoutines } from "@/app/utils/navigationActions";
 interface SuccessModalProps {
   showModal: boolean;
   successText: string;
+  navigateFunction: () => {};
 }
 
 const SuccessModal: React.FC<SuccessModalProps> = ({
   showModal,
   successText,
+  navigateFunction,
 }) => {
   return (
     <>
@@ -24,8 +26,8 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
             </h1>
             <ButtonComponent
               label="Return to Routines"
-              customStyles="text-white"
-              handleClick={navigateRoutines}
+              customStyles="text-white bg-orange-500 hover:bg-orange-400"
+              handleClick={navigateFunction}
             ></ButtonComponent>
           </div>
         </div>

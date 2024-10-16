@@ -1,5 +1,4 @@
 "use client";
-import Button from "@/app/components/shared-components/Button";
 import React, { useEffect, useState } from "react";
 import { testLog } from "@/app/utils/helpers";
 import Card from "@/app/components/shared-components/Card";
@@ -10,6 +9,7 @@ import { redirect } from "next/navigation";
 import { navigateHome } from "@/app/utils/navigationActions";
 import { loginUser, registerUser } from "@/app/services/apiService";
 import { User } from "@/app/types/user";
+import ButtonComponent from "@/app/components/shared-components/Button";
 
 enum LoginPageText {
   NoAccountQuestion = "Don't have an account?",
@@ -185,7 +185,11 @@ const LoginPage: React.FC = () => {
                   onChange={handlePasswordChange}
                   styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                 ></Input>
-                <Button handleClick={login} label="Log In"></Button>
+                <ButtonComponent
+                  handleClick={login}
+                  label="Log In"
+                  customStyles="p-2 mt-4 text-white bg-orange-500 hover:bg-orange-400"
+                ></ButtonComponent>
               </>
             )}
 
@@ -234,10 +238,11 @@ const LoginPage: React.FC = () => {
                   onChange={handleEmailChange}
                   styles="p-2 bg-transparent border-b-2 border-slate-100 placeholder-slate-400 mb-3 w-full focus:outline-0"
                 ></Input>
-                <Button
+                <ButtonComponent
                   handleClick={createAccount}
                   label="Create Account"
-                ></Button>
+                  customStyles="p-2 mt-4 text-white bg-orange-500 hover:bg-orange-400"
+                ></ButtonComponent>
               </>
             )}
             <div className="text-wrap text-red-600 font-semibold text-center mt-5">

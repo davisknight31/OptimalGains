@@ -70,3 +70,52 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function PUT(request: NextRequest) {
+  //update a period
+
+  //if param disable current active is true, then disable, otherwise do other logic
+  try {
+    const body = await request.json();
+    if (body.setInactive) {
+      const activePeriod = await prisma.periods.findFirst({
+        where: {
+          active: true,
+        },
+      });
+
+      if (activePeriod) {
+        await prisma.periods.update({
+          where: {
+            periodId: activePeriod?.periodId,
+            active: true,
+          },
+          data: {
+            active: false,
+          },
+        });
+        return NextResponse.json({
+          message: "Period successfully set to inactive",
+        });
+      }
+    }
+
+    return NextResponse.json({
+      message: "Period successfully updated",
+    });
+  } catch (error: any) {
+    console.error("Error updating period:", error);
+
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      return NextResponse.json(
+        { error: "Database connection failed" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "An unknown error occurred" },
+      { status: 500 }
+    );
+  }
+}

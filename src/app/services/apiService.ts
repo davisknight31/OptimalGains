@@ -1,3 +1,4 @@
+import { User } from "@supabase/supabase-js";
 import { Exercise } from "../types/exercise";
 import { Period } from "../types/period";
 import { PeriodWorkout } from "../types/periodWorkout";
@@ -255,6 +256,32 @@ export async function getPeriodSets(periodExerciseId: number) {
     }
   );
   return response;
+}
+
+export async function startNewPeriod(
+  userId: number,
+  newPeriodName: string,
+  selectedRoutine: Routine,
+  newPeriodLength: string
+) {
+  //set current period to inactive
+  const periodsUrl = "/api/periods";
+
+  const setInactiveData = {
+    setInactive: true,
+  };
+
+  await makePutRequest(periodsUrl, setInactiveData);
+
+  const newPeriodData = {
+    userId: userId,
+    routineId: selectedRoutine.routineId,
+    periodName: newPeriodName,
+    lengthInWeeks: parseInt(newPeriodLength),
+  };
+
+  //create new period
+  await makePostRequest(periodsUrl, newPeriodData);
 }
 
 export async function getAllExercises() {
