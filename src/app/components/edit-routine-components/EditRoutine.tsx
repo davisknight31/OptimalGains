@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { testLog } from "@/app/utils/helpers";
 import { Routine } from "@/app/types/routine";
 import Input from "../shared-components/Input";
 import Spinner from "../shared-components/Spinner";
@@ -120,11 +119,22 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
       ).sort(
         (a: Workout, b: Workout) => a.positionInRoutine - b.positionInRoutine
       );
+      if (initialWorkoutsRef.current) {
+        initialWorkoutsRef.current.forEach((workout: Workout) => {
+          workout.workoutExercises.sort(
+            (a: WorkoutExercise, b: WorkoutExercise) =>
+              a.positionInWorkout - b.positionInWorkout
+          );
+        });
+      }
+
       initialRoutineName.current = routine.routineName;
       initialRoutineLength.current = routine.lengthInDays.toString();
 
       setConfirmationText("Routine Updated!");
     } else {
+      // const emptyWorkouts = Array.from({ length: 7 }).map(() => emptyWorkout);
+      // setWorkouts(emptyWorkouts);
       setConfirmationText("Routine Created!");
     }
   }, [routine]);
@@ -135,6 +145,10 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
         (a: Workout, b: Workout) => a.positionInRoutine - b.positionInRoutine
       );
       const isModified = _.isEqual(sortedWorkouts, initialWorkoutsRef.current);
+
+      console.log("sortedWorkouts: ", sortedWorkouts);
+      console.log("initial:", initialWorkoutsRef.current);
+      console.log(isModified);
       setIsUpdateButtonDisabled(isModified);
     }
     if (
@@ -144,6 +158,8 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
       setIsUpdateButtonDisabled(false);
     }
   }, [workouts, routineName, lengthInDays]);
+
+  // useEffect((),[isUpdateButtonDisabled])
 
   function createGroupedExercisesList(): GroupedExercisesOption[] {
     const groupedOptions: GroupedExercisesOption[] = exercises.reduce(
@@ -387,7 +403,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
     }
   }
 
-  function addWorkout(): void {
+  function addWorkout(restDay: boolean): void {
     setErrorMessage("");
     const maxPosition = Math.max(
       ...workouts.map((workout) => workout.positionInRoutine)
@@ -398,7 +414,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
         {
           workoutId: undefined,
           uniqueKey: newWorkoutKeyCounter,
-          workoutName: "",
+          workoutName: restDay ? "Rest Day" : "",
           positionInRoutine: maxPosition === -Infinity ? 1 : maxPosition + 1,
           workoutExercises: [],
         },
@@ -543,9 +559,27 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
       )}
 
       <div className="p-4">
+        {/* <div>
+          <span className="font-bold">*Disclaimer: </span> Do
+          <span className="font-bold"> NOT </span> include rest days. A routine
+          is done
+          <span className="font-bold"> ONCE </span> per week.<br></br>
+          <br></br>This means that if you set the length to
+          <span className="font-bold"> 5 days</span>, then the routine would be
+          <span className="font-bold"> 5 workouts</span> and
+          <span className="font-bold"> 2 rest days</span> of your choosing,
+          equalling a total of <span className="font-bold">7 days.</span>
+          <br></br>
+          <br></br>We leave rest days up to you to decide on at any point,
+          incase you need to move them around. This is done to ensure that the
+          routine will fit evenly in a period. You may still choose a length
+          longer than 7 days, but keep in mind this will not workout with a
+          period.<br></br>
+          <br></br>
+        </div> */}
         {/* Routine Details */}
-        <div className="mb-4 flex">
-          <label className="font-bold text-lg block">Routine Name</label>
+        <div className="mb-4">
+          <label className="font-bold text-lg block">Routine Name:</label>
           <Input
             placeholder="Routine Name"
             type="text"
@@ -555,7 +589,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
           />
         </div>
         <div className="mb-4">
-          <label className="font-bold text-lg block">Length in Days</label>
+          <label className="font-bold text-lg block">Length in Days:</label>
           <Input
             placeholder="Length In Days"
             type="number"
@@ -573,17 +607,64 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
             .map((workout, workoutIndex) => (
               <div key={workout.workoutId || `${workout.uniqueKey}`}>
                 {/* Workout Card */}
-                <div className="bg-slate-100 p-4 rounded-lg mb-7">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-bold text-lg">{workout.workoutName}</h3>
-                    <div className="flex gap-2">
-                      <img
-                        className="hover:cursor-pointer"
-                        src={trashIcon.src}
-                        width="32px"
-                        alt="delete"
-                        onClick={() => removeWorkout(workout)}
+                <div className="bg-slate-50 p-4 rounded-lg mb-7">
+                  <div className="flex flex-col ">
+                    <span className="font-bold">Name:</span>
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        placeholder="Name"
+                        type="text"
+                        styles={inputStyles}
+                        onChange={(newName) =>
+                          handleWorkoutNameChange(workoutIndex, newName)
+                        }
+                        value={workout.workoutName}
                       />
+                      <button
+                        onClick={() =>
+                          swapWorkouts(
+                            workoutIndex,
+                            workoutIndex - 1,
+                            workout.positionInRoutine,
+                            workout.positionInRoutine - 1
+                          )
+                        }
+                        disabled={workoutIndex === 0}
+                        className={`${
+                          workoutIndex === 0
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        } p-1 font-bold text-xl border rounded-full bg-white `}
+                      >
+                        &nbsp;↑&nbsp;
+                      </button>
+                      <button
+                        onClick={() =>
+                          swapWorkouts(
+                            workoutIndex,
+                            workoutIndex + 1,
+                            workout.positionInRoutine,
+                            workout.positionInRoutine + 1
+                          )
+                        }
+                        disabled={workoutIndex === workouts.length - 1}
+                        className={`${
+                          workoutIndex === workouts.length - 1
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        } p-1 font-bold text-xl border rounded-full bg-white`}
+                      >
+                        &nbsp;↓&nbsp;
+                      </button>
+                      <div className="flex gap-2 flex-grow justify-end">
+                        <img
+                          className="hover:cursor-pointer "
+                          src={trashIcon.src}
+                          width="32px"
+                          alt="delete"
+                          onClick={() => removeWorkout(workout)}
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -648,42 +729,44 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                               }
                             />
                           </span>
+                          <div className="flex gap-2">
+                            <ButtonComponent
+                              label="↑"
+                              customStyles="p-3 text-md mt-4 rounded-md bg-slate-200 text-slate-700 disabled:bg-slate-100"
+                              handleClick={() =>
+                                swapExercises(
+                                  workoutIndex,
+                                  exerciseIndex,
+                                  exerciseIndex - 1,
+                                  exercise.positionInWorkout,
+                                  exercise.positionInWorkout - 1
+                                )
+                              }
+                              isDisabled={exerciseIndex === 0}
+                            ></ButtonComponent>
+                            <ButtonComponent
+                              label="↓"
+                              customStyles="p-3 text-md mt-4 rounded-md bg-slate-200 text-slate-700 disabled:bg-slate-100"
+                              handleClick={() =>
+                                swapExercises(
+                                  workoutIndex,
+                                  exerciseIndex,
+                                  exerciseIndex + 1,
+                                  exercise.positionInWorkout,
+                                  exercise.positionInWorkout + 1
+                                )
+                              }
+                              isDisabled={
+                                exerciseIndex ===
+                                workout.workoutExercises.length - 1
+                              }
+                            ></ButtonComponent>
+                          </div>
                         </div>
                         <div className="flex gap-2">
                           <ButtonComponent
-                            label="↑"
-                            customStyles="p-2 text-md mt-4 text-white rounded-md"
-                            handleClick={() =>
-                              swapExercises(
-                                workoutIndex,
-                                exerciseIndex,
-                                exerciseIndex - 1,
-                                exercise.positionInWorkout,
-                                exercise.positionInWorkout - 1
-                              )
-                            }
-                            isDisabled={exerciseIndex === 0}
-                          ></ButtonComponent>
-                          <ButtonComponent
-                            label="↓"
-                            customStyles="p-2 text-md mt-4 text-white rounded-md"
-                            handleClick={() =>
-                              swapExercises(
-                                workoutIndex,
-                                exerciseIndex,
-                                exerciseIndex + 1,
-                                exercise.positionInWorkout,
-                                exercise.positionInWorkout + 1
-                              )
-                            }
-                            isDisabled={
-                              exerciseIndex ===
-                              workout.workoutExercises.length - 1
-                            }
-                          ></ButtonComponent>
-                          <ButtonComponent
                             label="Remove"
-                            customStyles="p-2 text-sm mt-4 text-white rounded-md"
+                            customStyles="p-3 text-sm mt-4 rounded-md bg-slate-200 text-slate-700"
                             handleClick={() =>
                               removeExerciseFromWorkout(
                                 workoutIndex,
@@ -697,24 +780,33 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                     ))}
 
                   {/* Add Exercise Button */}
-                  <ButtonComponent
-                    label="Add Exercise"
-                    handleClick={() => addExerciseToWorkout(workout)}
-                    customStyles="p-2 mt-4 text-slate-700 bg-slate-300 hover:bg-slate-200 hover:text-slate-600 "
-                  />
+                  {workout.workoutName !== "Rest Day" && (
+                    <ButtonComponent
+                      label="Add Exercise"
+                      handleClick={() => addExerciseToWorkout(workout)}
+                      customStyles="p-2 mt-4 text-slate-700 bg-slate-200 hover:bg-slate-200 hover:text-slate-600 "
+                    />
+                  )}
                 </div>
               </div>
             ))}
 
           {/* Add Workout Button */}
-          <ButtonComponent
-            label="Add Workout"
-            handleClick={() => addWorkout()}
-            customStyles="p-3 mt-4 text-white bg-orange-500 hover:bg-orange-400"
-          />
+          <div className="flex gap-5">
+            <ButtonComponent
+              label="Add Rest Day"
+              handleClick={() => addWorkout(true)}
+              customStyles="p-3 mt-4 text-white bg-orange-500 hover:bg-orange-400"
+            />
+            <ButtonComponent
+              label="Add Workout"
+              handleClick={() => addWorkout(false)}
+              customStyles="p-3 mt-4 text-white bg-orange-500 hover:bg-orange-400"
+            />
+          </div>
         </div>
       </div>
-
+      <div className="text-red-600 font-bold text-center">{errorMessage}</div>
       {/* Submit Section */}
       <div className="pt-5 text-center">
         {routine ? (
@@ -728,7 +820,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
           <ButtonComponent
             label="Create"
             handleClick={submitCreation}
-            customStyles="p-3 text-white bg-green-500 hover:bg-green-400"
+            customStyles="p-3 text-white bg-orange-500 hover:bg-orange-400"
           />
         )}
       </div>

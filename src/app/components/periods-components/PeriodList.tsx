@@ -35,8 +35,8 @@ const PeriodList: React.FC<PeriodListProps> = ({ periods }) => {
     <>
       <h1 className="text-3xl font-bold text-orange-500">Periods</h1>
 
-      {periods.length > 0 ? (
-        <table className="w-full">
+      <table className="w-full">
+        {periods.length > 0 ? (
           <tbody className="[&>*:nth-child(even)]:bg-slate-50">
             {periods
               .sort(
@@ -96,17 +96,29 @@ const PeriodList: React.FC<PeriodListProps> = ({ periods }) => {
               </td>
             </tr>
           </tbody>
-        </table>
-      ) : (
-        <div className="pt-5 font-bold text-xl">You have no routines</div>
-      )}
-      <div className="pt-5">
-        {/* <ButtonComponent
-              label="Create New Routine"
-              handleClick={navigateEditRoutines}
-              customStyles="text-white p-3"
-            ></ButtonComponent> */}
-      </div>
+        ) : (
+          <tbody className="pt-5 font-bold text-xl">
+            <tr>
+              <td className="font-bold text-xl p-3 pt-5 pb-5 w-fit">
+                You have no periods.
+              </td>
+            </tr>
+            <tr>
+              <td colSpan={3}>
+                <ButtonComponent
+                  label="Start a new period"
+                  handleClick={showConfirmationModal}
+                  customStyles="p-3 text-white bg-orange-500 hover:bg-orange-400"
+                ></ButtonComponent>
+              </td>
+            </tr>
+          </tbody>
+        )}
+      </table>
+
+      {/* <div className="pt-5">
+   
+      </div> */}
       <Modal showModal={showModal}>
         <p className="font-bold text-2xl text-center pb-5">
           Starting a new period will set your current period to inactive. This

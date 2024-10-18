@@ -1,11 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { testLog } from "@/app/utils/helpers";
 import Card from "@/app/components/shared-components/Card";
 import PageContainer from "@/app/components/shared-components/PageContainer";
 import Input from "@/app/components/shared-components/Input";
 import { useUser } from "@/app/contexts/UserContext";
-import { redirect } from "next/navigation";
 import { navigateHome } from "@/app/utils/navigationActions";
 import { loginUser, registerUser } from "@/app/services/apiService";
 import { User } from "@/app/types/user";

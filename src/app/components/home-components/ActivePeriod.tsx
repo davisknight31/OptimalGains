@@ -1,6 +1,9 @@
 import React from "react";
 import { testLog } from "@/app/utils/helpers";
-import { navigatePeriods } from "@/app/utils/navigationActions";
+import {
+  navigatePeriods,
+  navigatePeriodWorkout,
+} from "@/app/utils/navigationActions";
 import { Period } from "@/app/types/period";
 import Spinner from "../shared-components/Spinner";
 import { Routine } from "@/app/types/routine";
@@ -63,7 +66,7 @@ const ActivePeriod: React.FC<ActivePeriodProps> = ({
                   customStyles="text-white p-3 bg-orange-500 hover:bg-orange-400"
                 ></ButtonComponent>
                 <ButtonComponent
-                  handleClick={testLog}
+                  handleClick={navigatePeriodWorkout}
                   label="Start Next Workout"
                   customStyles="text-white p-3 bg-orange-500 hover:bg-orange-400 disabled:bg-orange-100"
                   isDisabled={period.periodId === 0 ? true : false}

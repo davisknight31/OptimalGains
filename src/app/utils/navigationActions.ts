@@ -29,6 +29,10 @@ export async function navigateNewPeriod() {
   redirect("/pages/new-period");
 }
 
+export async function navigatePeriodWorkout() {
+  redirect("/pages/period-workout");
+}
+
 // export async function navigateHome(data: FormData) {
 //   redirect(`/posts/${data.get('id')}`)
 // }

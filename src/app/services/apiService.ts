@@ -190,8 +190,6 @@ export async function getPeriods(userId: number) {
 
   const periods: Period[] = responseData.periods;
 
-  console.log(typeof periods[0].dateStarted);
-
   const periodWorkoutsPromises = periods.map(async (period) => {
     const periodWorkoutsResponse = await getPeriodWorkouts(period.periodId);
     const periodWorkouts = await periodWorkoutsResponse.json();
