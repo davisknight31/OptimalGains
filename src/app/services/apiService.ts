@@ -74,6 +74,21 @@ async function makeDeleteRequest(url: string, data: any) {
   return await response.json();
 }
 
+export async function getAllExercises() {
+  const response = await fetch(`/api/exercises`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const responseData = await response.json();
+
+  const exercises: Exercise[] = responseData.exercises || [];
+
+  return exercises;
+}
+
 export async function registerUser(
   username: string,
   password: string,
@@ -204,7 +219,7 @@ export async function getPeriods(userId: number) {
         const periodSetsPromises = periodWorkout.periodExercises.map(
           async (periodExercise) => {
             const periodSetsResponse = await getPeriodSets(
-              periodExercise.periodExerciseId
+              periodExercise.periodExerciseId!
             );
             const periodSets = await periodSetsResponse.json();
             periodExercise.periodSets = periodSets.periodSets;
@@ -282,19 +297,59 @@ export async function startNewPeriod(
   await makePostRequest(periodsUrl, newPeriodData);
 }
 
-export async function getAllExercises() {
-  const response = await fetch(`/api/exercises`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+export async function submitPeriodWorkout(
+  periodId: number,
+  workoutId: number,
+  periodWorkout: PeriodWorkout,
+  workoutName: string
+) {
+  const periodWorkoutsUrl = "/api/period-workouts";
+  const periodExercisesUrl = "/api/period-exercises";
+  const periodSetsUrl = "/api/period-sets";
 
-  const responseData = await response.json();
+  const periodWorkoutData = {
+    periodId: periodId,
+    workoutId: workoutId,
+    periodWorkoutName: workoutName,
+  };
 
-  const exercises: Exercise[] = responseData.exercises || [];
+  const periodWorkoutResponse = await makePostRequest(
+    periodWorkoutsUrl,
+    periodWorkoutData
+  );
 
-  return exercises;
+  const newPeriodWorkoutId =
+    periodWorkoutResponse.periodWorkout.periodWorkoutId;
+
+  const newPeriodExercises = periodWorkout.periodExercises.map(
+    async (periodExercise) => {
+      const periodExerciseData = {
+        periodWorkoutId: newPeriodWorkoutId,
+        workoutExerciseId: periodExercise.workoutExerciseId,
+      };
+      const newPeriodExerciseResponse = await makePostRequest(
+        periodExercisesUrl,
+        periodExerciseData
+      );
+      const newPeriodExerciseId =
+        newPeriodExerciseResponse.periodExercise.periodExerciseId;
+      const newPeriodSets = periodExercise.periodSets.map(async (periodSet) => {
+        const periodSetData = {
+          periodExerciseId: newPeriodExerciseId,
+          setNumber: periodSet.setNumber,
+          targetReps: periodSet.targetReps,
+          actualReps: periodSet.actualReps,
+          weight: periodSet.weight,
+        };
+        const newPeriodSetResponse = await makePostRequest(
+          periodSetsUrl,
+          periodSetData
+        );
+      });
+      await Promise.all(newPeriodSets);
+    }
+  );
+  await Promise.all(newPeriodExercises);
 }
 
 export async function createRoutine(

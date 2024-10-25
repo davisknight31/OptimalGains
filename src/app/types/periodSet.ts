@@ -1,6 +1,6 @@
 export interface PeriodSet {
-  periodSetId: number;
-  periodExerciseId: number;
+  periodSetId?: number;
+  periodExerciseId?: number;
   setNumber: number;
   targetReps: number;
   actualReps: number;

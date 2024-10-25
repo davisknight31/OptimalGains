@@ -50,6 +50,9 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     console.log(user?.routines, user?.periods, exercises, activePeriod);
+    console.log(
+      exercises.filter((exercise) => exercise.exerciseType === "Plate")
+    );
     if (user?.periods && !activePeriod) {
       const foundActivePeriod: Period = user.periods.find(
         (period) => period.active

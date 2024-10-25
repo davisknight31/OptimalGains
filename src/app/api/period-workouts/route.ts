@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: "Period workout created successfully",
-      period: newPeriodWorkout,
+      periodWorkout: newPeriodWorkout,
     });
   } catch (error: any) {
     console.error("Error creating period workout:", error);

@@ -1,9 +1,13 @@
 "use client";
 import Exercise from "@/app/components/period-workout-components/ExerciseDetails";
+import ButtonComponent from "@/app/components/shared-components/Button";
 import Card from "@/app/components/shared-components/Card";
+import Input from "@/app/components/shared-components/Input";
 import Navbar from "@/app/components/shared-components/Navbar";
 import PageContainer from "@/app/components/shared-components/PageContainer";
 import { useUser } from "@/app/contexts/UserContext";
+import { inputStyles } from "@/app/docs/PreferencesData";
+import { getPeriods, submitPeriodWorkout } from "@/app/services/apiService";
 import { Period } from "@/app/types/period";
 import { PeriodExercise } from "@/app/types/periodExercise";
 import { PeriodSet } from "@/app/types/periodSet";
@@ -11,13 +15,13 @@ import { PeriodWorkout } from "@/app/types/periodWorkout";
 import { Routine } from "@/app/types/routine";
 import { Workout } from "@/app/types/workout";
 import { getCurrentDate } from "@/app/utils/helpers";
-import { navigateLogin } from "@/app/utils/navigationActions";
+import { navigateLogin, navigatePeriods } from "@/app/utils/navigationActions";
 import React, { useEffect, useState } from "react";
 
 const PeriodWorkoutPage: React.FC = () => {
   // IF IN THIS PAGE, THEN THERE HAS TO BE AN ACTIVE PERIOD AND AT LEAST ONE ROUTINE
   // SO IT IS OKAY TO ASSUME THIS AND TELL TYPESCRIPT
-  const { isLoggedIn, user, exercises } = useUser();
+  const { isLoggedIn, user, setUser, exercises } = useUser();
   const [activePeriod, setActivePeriod] = useState<Period>();
   const [activePeriodsAssociatedRoutine, setActivePeriodsAssociatedRoutine] =
     useState<Routine>();
@@ -30,6 +34,12 @@ const PeriodWorkoutPage: React.FC = () => {
 
   const [presentWorkout, setPresentWorkout] = useState<Workout>();
   const [comparisonWorkout, setComparisonWorkout] = useState<PeriodWorkout>();
+  const [newPeriodWorkout, setNewPeriodWorkout] = useState<PeriodWorkout>();
+  const [newPeriodExercises, setNewPeriodExercises] = useState<
+    PeriodExercise[]
+  >([]);
+  const [newPeriodWorkoutName, setNewPeriodWorkoutName] = useState<string>();
+  const [hasEmptyFields, setHasEmptyFields] = useState<boolean>(true);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -37,6 +47,7 @@ const PeriodWorkoutPage: React.FC = () => {
     }
     //finds and sets what the current active period is
     const activePeriod = findActivePeriod();
+    console.log(activePeriod?.periodId);
     findActivePeriodsAssociatedRoutine(activePeriod);
   });
 
@@ -66,9 +77,22 @@ const PeriodWorkoutPage: React.FC = () => {
   }, [activePeriod, activePeriodsAssociatedRoutine]);
 
   useEffect(() => {
-    console.log(presentWorkout);
-    console.log(comparisonWorkout);
-  }, [presentWorkout, comparisonWorkout]);
+    console.log(newPeriodExercises);
+    setNewPeriodWorkout({
+      ...newPeriodWorkout,
+      periodExercises: newPeriodExercises,
+    } as PeriodWorkout);
+    const hasAllReps = determineIfRepsFilled(newPeriodExercises);
+    const hasAllWeights = determineIfWeightsFilled(newPeriodExercises);
+    console.log(hasAllReps, hasAllWeights);
+    hasAllReps && hasAllWeights
+      ? setHasEmptyFields(false)
+      : setHasEmptyFields(true);
+  }, [newPeriodExercises]);
+
+  useEffect(() => {
+    console.log(newPeriodWorkout);
+  }, [newPeriodWorkout]);
 
   function findActivePeriod(): Period {
     const foundActivePeriod = user?.periods.find((period) => period.active);
@@ -151,26 +175,89 @@ const PeriodWorkoutPage: React.FC = () => {
     return firstWorkout!;
   }
 
-  //   function getCurrentDate(): string {
-  //     const date = new Date();
-  //     const dayOfTheWeek = date.toLocaleString("en-us", { weekday: "long" });
-  //     const month = date.toLocaleString("en-us", { month: "long" });
-  //     const dayOfTheMonth = date.getDate();
+  function updateNewPeriodWorkout(
+    updatedPeriodExercise: PeriodExercise | undefined
+  ): void {
+    console.log(updatedPeriodExercise);
+    if (updatedPeriodExercise !== undefined) {
+      if (
+        newPeriodExercises.find(
+          (exercise) =>
+            exercise.workoutExerciseId ===
+            updatedPeriodExercise.workoutExerciseId
+        )
+      ) {
+        //if an exercise with the workoutExerciseId already exists
+        //aka the exercise has already been added
+        //then update it
+        const existingExerciseIndex = newPeriodExercises.findIndex(
+          (exercise) =>
+            exercise.workoutExerciseId ===
+            updatedPeriodExercise.workoutExerciseId
+        );
+        setNewPeriodExercises((prevExercises) => {
+          const updatedExercises = [...prevExercises];
+          updatedExercises[existingExerciseIndex] = updatedPeriodExercise;
+          return updatedExercises;
+        });
+      } else {
+        //otherwise add it to the array
+        setNewPeriodExercises((prevExercises) => [
+          ...prevExercises,
+          updatedPeriodExercise,
+        ]);
+      }
+    }
+  }
 
-  //     const lastDigitOfDay = dayOfTheMonth % 10;
-  //     const suffix =
-  //       ~~((dayOfTheMonth % 100) / 10) === 1
-  //         ? "th"
-  //         : lastDigitOfDay === 1
-  //         ? "st"
-  //         : lastDigitOfDay === 2
-  //         ? "nd"
-  //         : lastDigitOfDay === 3
-  //         ? "rd"
-  //         : "th";
+  function determineIfRepsFilled(
+    newPeriodExercises: PeriodExercise[]
+  ): boolean {
+    const allReps = newPeriodExercises.flatMap((exercise) =>
+      exercise.periodSets.map((set) => set.actualReps)
+    );
+    const unfilledRep = allReps.find((rep) => rep === 0);
+    const foundNaN = allReps.find((rep) => Number.isNaN(rep));
+    const allRepsFilled =
+      unfilledRep === 0 || Number.isNaN(foundNaN) ? false : true;
+    return allRepsFilled;
+  }
 
-  //     return dayOfTheWeek + ", " + month + " " + dayOfTheMonth + suffix;
-  //   }
+  function determineIfWeightsFilled(
+    newPeriodExercises: PeriodExercise[]
+  ): boolean {
+    const allWeights = newPeriodExercises.flatMap((exercise) =>
+      exercise.periodSets.map((set) => set.weight)
+    );
+    const foundNaN = allWeights.find((weight) => Number.isNaN(weight));
+    const allWeightsFilled = Number.isNaN(foundNaN) ? false : true;
+    return allWeightsFilled;
+  }
+
+  async function handlePeriodWorkoutSubmit(): Promise<void> {
+    console.log(activePeriod?.periodId);
+    console.log(newPeriodWorkout);
+    console.log(newPeriodWorkoutName);
+    if (
+      activePeriod &&
+      newPeriodWorkout &&
+      newPeriodWorkoutName &&
+      presentWorkout
+    ) {
+      await submitPeriodWorkout(
+        activePeriod?.periodId,
+        presentWorkout.workoutId!,
+        newPeriodWorkout,
+        newPeriodWorkoutName
+      );
+      if (user) {
+        await getPeriods(user.userId).then((fetchedPeriods) => {
+          setUser({ ...user, periods: fetchedPeriods });
+        });
+      }
+      navigatePeriods();
+    }
+  }
 
   return (
     <>
@@ -182,7 +269,17 @@ const PeriodWorkoutPage: React.FC = () => {
               <h1 className="text-3xl font-bold text-orange-500">
                 {presentWorkout?.workoutName}
               </h1>
-              {getCurrentDate()}
+              <div className="mb-3 text-slate-500 font-bold">
+                {getCurrentDate()}
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Workout Name"
+                  styles={inputStyles}
+                  onChange={(newValue) => setNewPeriodWorkoutName(newValue)}
+                ></Input>
+              </div>
               {presentWorkout?.workoutExercises.map(
                 (workoutExercise, workoutExerciseIndex) => (
                   <div key={workoutExercise.workoutExerciseId}>
@@ -201,6 +298,7 @@ const PeriodWorkoutPage: React.FC = () => {
                             exercise.exerciseId === workoutExercise.exerciseId
                         )!
                       }
+                      handleExerciseDataChange={updateNewPeriodWorkout}
                     ></Exercise>
                   </div>
                 )
@@ -208,6 +306,16 @@ const PeriodWorkoutPage: React.FC = () => {
             </Card>
           </div>
         </PageContainer>
+        <div className="m-5">
+          <ButtonComponent
+            label="Finish Workout"
+            customStyles="bg-orange-500 rounded-xl p-3 text-white mt-4"
+            handleClick={() => {
+              handlePeriodWorkoutSubmit();
+            }}
+            isDisabled={hasEmptyFields}
+          ></ButtonComponent>
+        </div>
       </main>
     </>
   );

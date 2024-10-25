@@ -3,5 +3,7 @@ export interface Exercise {
   exerciseName: string;
   targetMuscleGroup: string;
   setup: string;
+  progressionStyle: string;
+  exerciseType: string;
   execution: string;
 }

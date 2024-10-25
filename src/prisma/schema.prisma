@@ -21,6 +21,8 @@ model Exercises {
   targetMuscleGroup     String
   setup            String
   execution        String
+  progressionStyle     String
+  exerciseType     String
   workoutExercises WorkoutExercises[]
 
 }
