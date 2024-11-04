@@ -48,25 +48,35 @@ const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
 
   function checkPreviousPerformances() {
     if (comparisonExercise) {
+      //if a set is found where target reps were not hit, then set to false, otherwise true
       const hitAllTargets = comparisonExercise.periodSets.find(
         (set) => set.targetReps !== set.actualReps
       )
         ? false
         : true;
 
-      const calculatedProgressedExercise = hitAllTargets
-        ? createProgressedExercise()
-        : createNonProgressedExercise();
+      const allSameWeight = comparisonExercise.periodSets.every(
+        (set) => set.weight === comparisonExercise.periodSets[0].weight
+      );
+
+      const calculatedProgressedExercise =
+        hitAllTargets && allSameWeight
+          ? createProgressedExercise()
+          : createNonProgressedExercise();
 
       setProgressedExercise(calculatedProgressedExercise);
     } else {
       //create initial details probably based on user's 1 rep maxes//8-12 rep maxes
-      //or previous workout performances
+      //or previous workout performances in other periods eventually
+      //for now, let the user choose their first weight
+      const initalExercise = createInitialExercise();
+      setProgressedExercise(initalExercise);
     }
   }
 
   function createProgressedExercise(): PeriodExercise {
-    const newSets: PeriodSet[] = comparisonExercise.periodSets.map(
+    // ! can be used on comparisonExercise since a check was included in checkPreviousPerformances
+    const newSets: PeriodSet[] = comparisonExercise!.periodSets.map(
       (periodSet, periodSetIndex) => {
         if (exercise.progressionStyle === "Weight Priority") {
           const newWeight = determineNewWeight(exercise, periodSet);
@@ -90,25 +100,43 @@ const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
       }
     );
     const newPeriodExercise: PeriodExercise = {
-      workoutExerciseId: comparisonExercise.workoutExerciseId,
+      workoutExerciseId: comparisonExercise!.workoutExerciseId,
       periodSets: newSets,
     };
     return newPeriodExercise;
   }
 
   function createNonProgressedExercise(): PeriodExercise {
-    const newSets: PeriodSet[] = comparisonExercise.periodSets.map(
+    const newSets: PeriodSet[] = comparisonExercise!.periodSets.map(
       (periodSet, periodSetIndex) => {
         return {
           setNumber: periodSetIndex + 1,
           targetReps: periodSet.targetReps,
           actualReps: 0,
-          weight: periodSet.weight,
+          weight: comparisonExercise!.periodSets[0].weight,
         };
       }
     );
     const newPeriodExercise: PeriodExercise = {
-      workoutExerciseId: comparisonExercise.workoutExerciseId,
+      workoutExerciseId: comparisonExercise!.workoutExerciseId,
+      periodSets: newSets,
+    };
+    return newPeriodExercise;
+  }
+
+  function createInitialExercise(): PeriodExercise {
+    const newSets: PeriodSet[] = Array.from(
+      { length: workoutExercise.sets },
+      (_, i) => ({
+        setNumber: i + 1,
+        targetReps: 0,
+        actualReps: 0,
+        weight: 0,
+      })
+    );
+
+    const newPeriodExercise: PeriodExercise = {
+      workoutExerciseId: workoutExercise.workoutExerciseId!,
       periodSets: newSets,
     };
     return newPeriodExercise;

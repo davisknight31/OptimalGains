@@ -388,6 +388,7 @@ export async function createRoutine(
           workoutId: newWorkoutId,
           exerciseId: exercise.exerciseId,
           sets: exercise.sets,
+          targetReps: exercise.targetReps,
           positionInWorkout: exercise.positionInWorkout,
         };
         const createWorkoutExerciseResponse = await makePostRequest(

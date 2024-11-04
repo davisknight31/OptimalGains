@@ -46,19 +46,19 @@ interface TargetMuscleOption {
   value: string;
 }
 
-const targetMuscleOptions: TargetMuscleOption[] = [
-  { value: "All", label: "All" },
-  { value: "Chest", label: "Chest" },
-  { value: "Triceps", label: "Triceps" },
-  { value: "Front Delts", label: "Front Delts" },
-  { value: "Side Delts", label: "Side Delts" },
-  { value: "Rear Delts", label: "Rear Delts" },
-  { value: "Back", label: "Back" },
-  { value: "Biceps", label: "Biceps" },
-  { value: "Traps", label: "Traps" },
-  { value: "Forearms", label: "Forearms" },
-  { value: "Legs", label: "Legs" },
-];
+// const targetMuscleOptions: TargetMuscleOption[] = [
+//   { value: "All", label: "All" },
+//   { value: "Chest", label: "Chest" },
+//   { value: "Triceps", label: "Triceps" },
+//   { value: "Front Delts", label: "Front Delts" },
+//   { value: "Side Delts", label: "Side Delts" },
+//   { value: "Rear Delts", label: "Rear Delts" },
+//   { value: "Back", label: "Back" },
+//   { value: "Biceps", label: "Biceps" },
+//   { value: "Traps", label: "Traps" },
+//   { value: "Forearms", label: "Forearms" },
+//   { value: "Legs", label: "Legs" },
+// ];
 
 const customFilterOption = (
   candidate: { label: string; value: any; data: ExerciseOption },
@@ -83,6 +83,8 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
   const [lengthInDays, setLengthInDays] = useState<string>("");
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [inputSets, setInputSets] = useState<{ [key: string]: string }>({});
+  const [inputReps, setInputReps] = useState<{ [key: string]: string }>({});
+
   const [groupedExerciseOptions, setGroupedExerciseOptions] = useState<
     GroupedExercisesOption[]
   >([]);
@@ -93,11 +95,12 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
   const [newWorkoutKeyCounter, setNewWorkoutKeyCounter] = useState<number>(0);
   const [newExerciseKeyCounter, setNewExerciseKeyCounter] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [noExercisesText, setNoExercisesText] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [confirmationText, setConfirmationText] = useState<string>("");
   const [showConfirmationModal, setShowConfirmationModal] =
     useState<boolean>(false);
-  const [isUpdateButtonDisabled, setIsUpdateButtonDisabled] =
+  const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] =
     useState<boolean>(true);
 
   const initialWorkoutsRef = useRef<Workout[] | null>(null);
@@ -140,26 +143,124 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
   }, [routine]);
 
   useEffect(() => {
-    if (initialWorkoutsRef.current) {
-      const sortedWorkouts = JSON.parse(JSON.stringify(workouts)).sort(
-        (a: Workout, b: Workout) => a.positionInRoutine - b.positionInRoutine
-      );
-      const isModified = _.isEqual(sortedWorkouts, initialWorkoutsRef.current);
+    if (routine) {
+      if (initialWorkoutsRef.current) {
+        const sortedWorkouts = JSON.parse(JSON.stringify(workouts)).sort(
+          (a: Workout, b: Workout) => a.positionInRoutine - b.positionInRoutine
+        );
+        //isNotModified is true if the two are equal, otherwise isNotModified is false
+        const isNotModified = _.isEqual(
+          sortedWorkouts,
+          initialWorkoutsRef.current
+        );
 
-      console.log("sortedWorkouts: ", sortedWorkouts);
-      console.log("initial:", initialWorkoutsRef.current);
-      console.log(isModified);
-      setIsUpdateButtonDisabled(isModified);
-    }
-    if (
-      routineName !== initialRoutineName.current ||
-      lengthInDays !== initialRoutineLength.current
-    ) {
-      setIsUpdateButtonDisabled(false);
+        const isValid = validate();
+        if (isValid) {
+          setIsSubmitButtonDisabled(isNotModified);
+        }
+      }
+      if (
+        routineName !== initialRoutineName.current ||
+        lengthInDays !== initialRoutineLength.current
+      ) {
+        const isValid = validate();
+        if (isValid) {
+          setIsSubmitButtonDisabled(false);
+        }
+      }
+    } else {
+      const isValid = validate();
+      console.log(isValid);
+      setIsSubmitButtonDisabled(!isValid);
+      // const allNames = workouts.flatMap((workout) => workout.workoutName);
+
+      // const workoutExercises = workouts.flatMap(
+      //   (workout) => workout.workoutExercises
+      // );
+      // const zeroValueExerciseId = workoutExercises.find(
+      //   (exercise) => exercise.exerciseId === 0
+      // );
+
+      // const allSets = Object.values(inputSets);
+      // const allReps = Object.values(inputReps);
+
+      // const emptyNameValue = allNames.find((name) => name === "");
+      // const emptySetsValue = allSets.find((set) => set === "");
+      // const emptyRepsValue = allReps.find((rep) => rep === "");
+
+      // const hasZeroExerciseIdValue =
+      //   zeroValueExerciseId?.exerciseId === 0 ? true : false;
+      // const hasEmptyNameValue = emptyNameValue === "" ? true : false;
+      // const hasEmptySetsValue = emptySetsValue === "" ? true : false;
+      // const hasEmptyRepsValue = emptyRepsValue === "" ? true : false;
+
+      // if (
+      //   routineName &&
+      //   lengthInDays &&
+      //   !hasEmptyNameValue &&
+      //   !hasZeroExerciseIdValue &&
+      //   !hasEmptySetsValue &&
+      //   !hasEmptyRepsValue
+      // ) {
+      //   setIsSubmitButtonDisabled(false);
+      // } else {
+      //   setIsSubmitButtonDisabled(true);
+      // }
     }
   }, [workouts, routineName, lengthInDays]);
 
-  // useEffect((),[isUpdateButtonDisabled])
+  function validate(): boolean {
+    const allNames = workouts.flatMap((workout) => workout.workoutName);
+
+    const workoutExercises = workouts.flatMap(
+      (workout) => workout.workoutExercises
+    );
+    const zeroValueExerciseId = workoutExercises.find(
+      (exercise) => exercise.exerciseId === 0
+    );
+
+    //need to flat map reps and sets and check NaN
+    const workoutExerciseSets = workoutExercises.flatMap(
+      (workoutExercise) => workoutExercise.sets
+    );
+    const workoutExerciseReps = workoutExercises.flatMap(
+      (workoutExercise) => workoutExercise.targetReps
+    );
+
+    const allSets = Object.values(inputSets);
+    const allReps = Object.values(inputReps);
+
+    const emptyNameValue = allNames.find((name) => name === "");
+    const emptySetsValue = allSets.find((set) => set === "");
+    const emptyRepsValue = allReps.find((rep) => rep === "");
+    const nanSetsValue = workoutExerciseSets.find((sets) => Number.isNaN(sets));
+    const nanRepsValue = workoutExerciseReps.find((reps) => Number.isNaN(reps));
+
+    const hasZeroExerciseIdValue =
+      zeroValueExerciseId?.exerciseId === 0 ? true : false;
+    const hasWorkouts = workouts.length > 0 ? true : false;
+    const hasEmptyNameValue = emptyNameValue === "" ? true : false;
+    const hasEmptySetsValue = emptySetsValue === "" ? true : false;
+    const hasEmptyRepsValue = emptyRepsValue === "" ? true : false;
+    const hasNaNSetsValue = Number.isNaN(nanSetsValue) ? true : false;
+    const hasNaNRepsValue = Number.isNaN(nanRepsValue) ? true : false;
+
+    if (
+      routineName &&
+      lengthInDays &&
+      hasWorkouts &&
+      !hasEmptyNameValue &&
+      !hasZeroExerciseIdValue &&
+      !hasEmptySetsValue &&
+      !hasEmptyRepsValue &&
+      !hasNaNSetsValue &&
+      !hasNaNRepsValue
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   function createGroupedExercisesList(): GroupedExercisesOption[] {
     const groupedOptions: GroupedExercisesOption[] = exercises.reduce(
@@ -267,15 +368,15 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
     }));
 
     // If the new value is empty, don't update the state
-    if (newSets === "") {
-      return;
-    }
+    // if (newSets === "") {
+    //   return;
+    // }
 
     // Parse and check for valid numbers
-    const parsedSets = parseInt(newSets, 10);
-    if (isNaN(parsedSets) || parsedSets < 0) {
-      return;
-    }
+    // const parsedSets = parseInt(newSets, 10);
+    // if (isNaN(parsedSets) || parsedSets < 0) {
+    //   return;
+    // }
     //begins mapping previous workouts
     setWorkouts((prevWorkouts) =>
       prevWorkouts.map((workout, i) => {
@@ -290,6 +391,63 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                 return {
                   ...exercise,
                   sets: parseInt(newSets),
+                };
+              }
+              //if the exercise indexes don't match, just return the exercise
+              return exercise;
+            }
+          );
+          //return the workout with the modified exercise
+          return { ...workout, workoutExercises: updatedExercises };
+        }
+        //if the workout indexes don't match, just return the workout.
+        return workout;
+      })
+    );
+  };
+
+  const handleExerciseRepsChange = (
+    exerciseIndex: number,
+    workoutIndex: number,
+    newReps: string
+  ) => {
+    if (parseInt(newReps) > 50 || parseInt(newReps) < 1) {
+      newReps = inputReps[`${workoutIndex}-${exerciseIndex}`];
+    }
+
+    setInputReps((prevInputs) => ({
+      ...prevInputs,
+      [`${workoutIndex}-${exerciseIndex}`]: newReps, // Use a unique key per exercise input
+    }));
+
+    // If the new value is empty, don't update the state
+    if (newReps === "") {
+      //commented out because we want the empty values for validating
+      //and updating submit button disabled
+      // return;
+    }
+
+    // Parse and check for valid numbers
+    //commented out because we want the empty values for validating
+    //and updating submit button disabled
+    // const parsedReps = parseInt(newReps, 10);
+    // if (isNaN(parsedReps) || parsedReps < 0) {
+    //   return;
+    // }
+    //begins mapping previous workouts
+    setWorkouts((prevWorkouts) =>
+      prevWorkouts.map((workout, i) => {
+        //if the workout being edited matches the current index
+        if (i === workoutIndex) {
+          //being mapping workoutExercises
+          const updatedExercises = workout.workoutExercises.map(
+            (exercise, j) => {
+              // if the exercise being edited matches the current index
+              if (j === exerciseIndex) {
+                //then return the exercise, with the modified sets
+                return {
+                  ...exercise,
+                  targetReps: parseInt(newReps),
                 };
               }
               //if the exercise indexes don't match, just return the exercise
@@ -340,6 +498,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
   }
 
   function addExerciseToWorkout(workout: Workout): void {
+    setNoExercisesText("");
     if (workout.workoutId) {
       setWorkouts((prevWorkouts) =>
         prevWorkouts.map((mappedWorkout, i) => {
@@ -360,7 +519,8 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                   uniqueKey: newExerciseKeyCounter,
                   workoutId: workout.workoutId || undefined,
                   exerciseId: 0,
-                  sets: 0,
+                  sets: NaN,
+                  targetReps: NaN,
                   positionInWorkout:
                     maxPosition === -Infinity ? 1 : maxPosition + 1,
                 },
@@ -391,6 +551,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                   workoutId: workout.workoutId || undefined,
                   exerciseId: 0,
                   sets: 0,
+                  targetReps: 0,
                   positionInWorkout:
                     maxPosition === -Infinity ? 1 : maxPosition + 1,
                 },
@@ -423,7 +584,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
       setNewWorkoutKeyCounter(newWorkoutKeyCounter + 1);
     } else {
       setErrorMessage(
-        "Number of workouts must, at most, match the length of the routine."
+        "Number of workouts must match the length in days of the routine."
       );
     }
   }
@@ -492,9 +653,19 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
   }
 
   const submitUpdate = async () => {
-    if (workouts.length > parseInt(lengthInDays)) {
+    if (workouts.length !== parseInt(lengthInDays)) {
       setErrorMessage(
         "Number of workouts must, at most, match the length of the routine."
+      );
+    } else if (
+      workouts.find(
+        (workout) =>
+          workout.workoutExercises.length <= 0 &&
+          workout.workoutName !== "Rest Day"
+      )
+    ) {
+      setNoExercisesText(
+        "Please make sure all workouts have at least one exercise."
       );
     } else {
       setIsSubmitting(true);
@@ -522,9 +693,15 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
   };
 
   const submitCreation = async () => {
-    if (workouts.length > parseInt(lengthInDays)) {
+    if (workouts.length !== parseInt(lengthInDays)) {
       setErrorMessage(
-        "Number of workouts must, at most, match the length of the routine."
+        "Number of workouts must match the length in days of the routine."
+      );
+    } else if (
+      workouts.find((workout) => workout.workoutExercises.length <= 0)
+    ) {
+      setNoExercisesText(
+        "Please make sure all workouts have at least one exercise."
       );
     } else {
       setIsSubmitting(true);
@@ -535,6 +712,7 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
       await refreshRoutines();
 
       setShowConfirmationModal(true);
+      setIsSubmitting(false);
     }
   };
 
@@ -729,6 +907,25 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
                               }
                             />
                           </span>
+                          <span className="font-bold">
+                            Reps:<br></br>
+                            <Input
+                              placeholder="Reps"
+                              type="number"
+                              styles={inputStyles + " w-16"}
+                              onChange={(newReps) =>
+                                handleExerciseRepsChange(
+                                  exerciseIndex,
+                                  workoutIndex,
+                                  newReps
+                                )
+                              }
+                              value={
+                                inputReps[`${workoutIndex}-${exerciseIndex}`] ??
+                                exercise.targetReps.toString()
+                              }
+                            />
+                          </span>
                           <div className="flex gap-2">
                             <ButtonComponent
                               label="↑"
@@ -807,19 +1004,24 @@ const EditRoutine: React.FC<EditRoutineProps> = ({
         </div>
       </div>
       <div className="text-red-600 font-bold text-center">{errorMessage}</div>
+      <div className="text-red-600 font-bold text-center">
+        {noExercisesText}
+      </div>
+
       {/* Submit Section */}
       <div className="pt-5 text-center">
         {routine ? (
           <ButtonComponent
             label="Update"
             handleClick={submitUpdate}
-            isDisabled={isUpdateButtonDisabled}
+            isDisabled={isSubmitButtonDisabled}
             customStyles="p-3 text-white bg-orange-500 hover:bg-orange-400 disabled:bg-orange-200 disabled:cursor-not-allowed"
           />
         ) : (
           <ButtonComponent
             label="Create"
             handleClick={submitCreation}
+            isDisabled={isSubmitButtonDisabled}
             customStyles="p-3 text-white bg-orange-500 hover:bg-orange-400"
           />
         )}

@@ -2,6 +2,7 @@
 import Exercise from "@/app/components/period-workout-components/ExerciseDetails";
 import ButtonComponent from "@/app/components/shared-components/Button";
 import Card from "@/app/components/shared-components/Card";
+import CoverSpinner from "@/app/components/shared-components/CoverSpinner";
 import Input from "@/app/components/shared-components/Input";
 import Navbar from "@/app/components/shared-components/Navbar";
 import PageContainer from "@/app/components/shared-components/PageContainer";
@@ -40,6 +41,7 @@ const PeriodWorkoutPage: React.FC = () => {
   >([]);
   const [newPeriodWorkoutName, setNewPeriodWorkoutName] = useState<string>();
   const [hasEmptyFields, setHasEmptyFields] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -85,7 +87,7 @@ const PeriodWorkoutPage: React.FC = () => {
     const hasAllReps = determineIfRepsFilled(newPeriodExercises);
     const hasAllWeights = determineIfWeightsFilled(newPeriodExercises);
     console.log(hasAllReps, hasAllWeights);
-    hasAllReps && hasAllWeights
+    hasAllReps && hasAllWeights && newPeriodWorkoutName
       ? setHasEmptyFields(false)
       : setHasEmptyFields(true);
   }, [newPeriodExercises]);
@@ -238,12 +240,14 @@ const PeriodWorkoutPage: React.FC = () => {
     console.log(activePeriod?.periodId);
     console.log(newPeriodWorkout);
     console.log(newPeriodWorkoutName);
+
     if (
       activePeriod &&
       newPeriodWorkout &&
       newPeriodWorkoutName &&
       presentWorkout
     ) {
+      setIsSubmitting(true);
       await submitPeriodWorkout(
         activePeriod?.periodId,
         presentWorkout.workoutId!,
@@ -256,12 +260,14 @@ const PeriodWorkoutPage: React.FC = () => {
         });
       }
       navigatePeriods();
+      setIsSubmitting(false);
     }
   }
 
   return (
     <>
       <main>
+        {isSubmitting && <CoverSpinner />}
         <Navbar></Navbar>
         <PageContainer>
           <div className="flex flex-col gap-7">
@@ -280,18 +286,32 @@ const PeriodWorkoutPage: React.FC = () => {
                   onChange={(newValue) => setNewPeriodWorkoutName(newValue)}
                 ></Input>
               </div>
+              {!comparisonWorkout &&
+                presentWorkout?.workoutName !== "Rest Day" && (
+                  <div>
+                    {"This is the first workout for: " +
+                      presentWorkout?.workoutName +
+                      ". Use your best judgement and choose a starting weight reasonably below your 8 rep max for each exercise."}
+                  </div>
+                )}
+              {presentWorkout?.workoutName === "Rest Day" && (
+                <div>
+                  {
+                    "Confirm that you completed your rest day below. You may immediately move on to the next workout if necessary."
+                  }
+                </div>
+              )}
+
               {presentWorkout?.workoutExercises.map(
                 (workoutExercise, workoutExerciseIndex) => (
                   <div key={workoutExercise.workoutExerciseId}>
                     <Exercise
                       workoutExercise={workoutExercise}
-                      comparisonExercise={
-                        comparisonWorkout?.periodExercises.find(
-                          (exercise) =>
-                            exercise.workoutExerciseId ===
-                            workoutExercise.workoutExerciseId
-                        )!
-                      }
+                      comparisonExercise={comparisonWorkout?.periodExercises.find(
+                        (exercise) =>
+                          exercise.workoutExerciseId ===
+                          workoutExercise.workoutExerciseId
+                      )}
                       exercise={
                         exercises.find(
                           (exercise) =>
@@ -308,7 +328,11 @@ const PeriodWorkoutPage: React.FC = () => {
         </PageContainer>
         <div className="m-5">
           <ButtonComponent
-            label="Finish Workout"
+            label={
+              presentWorkout?.workoutName === "Rest Day"
+                ? "Confirm Rest Day"
+                : "Finish Workout"
+            }
             customStyles="bg-orange-500 rounded-xl p-3 text-white mt-4"
             handleClick={() => {
               handlePeriodWorkoutSubmit();

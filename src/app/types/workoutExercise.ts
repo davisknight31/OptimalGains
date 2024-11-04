@@ -5,4 +5,5 @@ export interface WorkoutExercise {
   exerciseId: number;
   sets: number;
   positionInWorkout: number;
+  targetReps: number;
 }

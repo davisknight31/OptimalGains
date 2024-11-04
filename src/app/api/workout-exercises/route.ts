@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
         workoutId: body.workoutId,
         exerciseId: body.exerciseId,
         sets: body.sets,
+        targetReps: body.targetReps,
         positionInWorkout: body.positionInWorkout,
       },
     });
